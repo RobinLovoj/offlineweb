@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="300dp"
+    android:height="100dp"
+    android:viewportWidth="300"
+    android:viewportHeight="100">
+
+    <!-- L -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M20,20 L40,20 L40,80 L80,80 L80,100 L20,100 Z" />
+
+    <!-- O -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M90,20 C75,20 65,35 65,50 C65,65 75,80 90,80 C105,80 115,65 115,50 C115,35 105,20 90,20 Z M90,35 C97,35 100,42 100,50 C100,58 97,65 90,65 C83,65 80,58 80,50 C80,42 83,35 90,35 Z" />
+
+    <!-- V -->
+    <path
+        android:fillColor="#FF0000"
+        android:pathData="M125,20 L145,20 L165,80 L185,20 L205,20 L175,100 L155,100 Z" />
+
+    <!-- O -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M215,20 C200,20 190,35 190,50 C190,65 200,80 215,80 C230,80 240,65 240,50 C240,35 230,20 215,20 Z M215,35 C222,35 225,42 225,50 C225,58 222,65 215,65 C208,65 205,58 205,50 C205,42 208,35 215,35 Z" />
+
+    <!-- J -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M250,20 L290,20 L290,70 C290,85 280,100 265,100 L250,100 L250,80 L260,80 C267,80 270,77 270,70 Z" />
+
+    <!-- Purple dot in first O -->
+    <path
+        android:fillColor="#6750A4"
+        android:pathData="M90,45 C87,45 85,47 85,50 C85,53 87,55 90,55 C93,55 95,53 95,50 C95,47 93,45 90,45 Z" />
+
+    <!-- Purple dot in second O -->
+    <path
+        android:fillColor="#6750A4"
+        android:pathData="M215,45 C212,45 210,47 210,50 C210,53 212,55 215,55 C218,55 220,53 220,50 C220,47 218,45 215,45 Z" />
+
+</vector> 

@@ -1,0 +1,7 @@
+This is a binary file and should be created manually. The ZIP file should contain:
+
+1. index.html
+2. js/model-viewer.min.js
+3. models/chair.glb
+
+Please create a ZIP file with these contents and place it at app/src/main/assets/offline/content.zip 
