@@ -15,7 +15,7 @@ class LocalWebServer(
             // If the request is for /3dmodel or /assets, serve from /dist/
             val file: File = when {
                 uri.startsWith("/3dmodel/") || uri.startsWith("/assets/") -> {
-                    File(rootDir, "dist$uri")
+                    File(rootDir, "$uri")
                 }
                 else -> {
                     File(rootDir, uri.removePrefix("/"))
@@ -29,7 +29,7 @@ class LocalWebServer(
 
             if (!targetFile.exists()) {
                 if (!uri.contains(".") || uri.endsWith(".html")) {
-                    targetFile = File(rootDir, "dist/index.html")
+                    targetFile = File(rootDir, "/index.html")
                 } else {
                     return newFixedLengthResponse(Response.Status.NOT_FOUND, "text/plain", "404 Not Found")
                 }

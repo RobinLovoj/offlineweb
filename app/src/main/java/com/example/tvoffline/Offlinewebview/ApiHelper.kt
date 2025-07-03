@@ -9,9 +9,10 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 
-class ApiHelper() {
+class ApiHelper {
     fun handleApiRequest(url: String, method: String): WebResourceResponse = runBlocking {
         try {
+            Log.d("ApiHelper","Making Request $url")
             makeApiRequest(url, method)
         } catch (e: Exception) {
             Log.e("ApiHelper", "API request failed: ${e.message}", e)
@@ -29,8 +30,8 @@ class ApiHelper() {
                     setRequestProperty("Content-Type", "application/json")
                     connect()
                 }
-                val responseCode = connection.responseCode
-                val response = connection.inputStream.use { it.bufferedReader().readText() }
+                val responseCode = connection!!.responseCode
+                val response = connection!!.inputStream.use { it.bufferedReader().readText() }
                 if (responseCode == HttpURLConnection.HTTP_OK) {
                     createSuccessResponse(response)
                 } else {
@@ -44,7 +45,7 @@ class ApiHelper() {
         }
     }
 
-    fun createSuccessResponse(response: String): WebResourceResponse {
+    private fun createSuccessResponse(response: String): WebResourceResponse {
         return WebResourceResponse(
             "application/json",
             "utf-8",
@@ -52,7 +53,7 @@ class ApiHelper() {
         )
     }
 
-    fun createErrorResponse(code: Int, message: String): WebResourceResponse {
+    private fun createErrorResponse(code: Int, message: String): WebResourceResponse {
         return WebResourceResponse(
             "application/json",
             "utf-8",

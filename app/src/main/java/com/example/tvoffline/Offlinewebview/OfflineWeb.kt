@@ -15,6 +15,8 @@ import com.example.tvoffline.R
 import android.util.Log
 import androidx.core.view.isVisible
 import android.webkit.JavascriptInterface
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 
 
 @RequiresApi(Build.VERSION_CODES.M)
@@ -76,6 +78,21 @@ class OfflineWebview : AppCompatActivity() {
                 progressBar.visibility = View.GONE
             }
 
+            override fun onLoadResource(view: WebView?, url: String?) {0
+
+                super.onLoadResource(view, url)
+                Log.d("OfflineWebview", "Loading Resource: $url")
+            }
+
+            override fun onReceivedHttpError(
+                view: WebView?,
+                request: WebResourceRequest?,
+                errorResponse: WebResourceResponse?
+            ) {
+                super.onReceivedHttpError(view, request, errorResponse)
+                Log.d("OfflineWebview", "Recieved SSL Error : $request")
+            }
+
             override fun onReceivedError(
                 view: WebView?,
                 request: android.webkit.WebResourceRequest?,
@@ -124,7 +141,8 @@ class OfflineWebview : AppCompatActivity() {
         val distIndex = java.io.File(baseDir, "dist/index.html")
         val directIndex = java.io.File(baseDir, "index.html")
         // Always load /index.html when server root is 'dist'
-        val url = "https://appassets.androidplatform.net/assets/index.html"
+        val url = "http://localhost:8080/"
+        Log.d("OfflineWebview","Started Loading $url")
         when {
             distIndex.exists() -> {
                 Log.d("OfflineWebview", "Loading from local server: $url")
