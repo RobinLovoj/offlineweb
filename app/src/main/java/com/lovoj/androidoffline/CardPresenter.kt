@@ -1,4 +1,4 @@
-package com.example.tvoffline
+package com.lovoj.androidoffline
 
 import android.graphics.drawable.Drawable
 import androidx.leanback.widget.ImageCardView
@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.ViewGroup
 
 import com.bumptech.glide.Glide
+import com.lovoj.androidoffline.R
 import kotlin.properties.Delegates
 
 

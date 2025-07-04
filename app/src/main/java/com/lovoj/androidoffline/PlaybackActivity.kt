@@ -1,4 +1,4 @@
-package com.example.tvoffline
+package com.lovoj.androidoffline
 
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity

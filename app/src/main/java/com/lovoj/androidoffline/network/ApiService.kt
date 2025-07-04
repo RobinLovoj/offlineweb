@@ -1,4 +1,4 @@
-package com.example.tvoffline.network
+package com.lovoj.androidoffline.network
 
 import retrofit2.Response
 import retrofit2.http.Body

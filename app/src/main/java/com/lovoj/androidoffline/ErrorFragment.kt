@@ -1,10 +1,11 @@
-package com.example.tvoffline
+package com.lovoj.androidoffline
 
 import android.os.Bundle
 import android.view.View
 
 import androidx.core.content.ContextCompat
 import androidx.leanback.app.ErrorSupportFragment
+import com.lovoj.androidoffline.R
 
 /**
  * This class demonstrates how to extend [ErrorSupportFragment].

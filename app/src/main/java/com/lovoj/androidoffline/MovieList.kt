@@ -1,4 +1,4 @@
-package com.example.tvoffline
+package com.lovoj.androidoffline
 
 object MovieList {
     val MOVIE_CATEGORY = arrayOf(

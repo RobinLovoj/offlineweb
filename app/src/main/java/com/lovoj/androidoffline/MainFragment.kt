@@ -1,4 +1,4 @@
-package com.example.tvoffline
+package com.lovoj.tvoffline
 
 import java.util.Collections
 import java.util.Timer
@@ -34,6 +34,12 @@ import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.SimpleTarget
 import com.bumptech.glide.request.transition.Transition
+import com.lovoj.androidoffline.BrowseErrorActivity
+import com.lovoj.androidoffline.CardPresenter
+import com.lovoj.androidoffline.DetailsActivity
+import com.lovoj.androidoffline.Movie
+import com.lovoj.androidoffline.MovieList
+import com.lovoj.androidoffline.R
 
 /**
  * Loads a grid of cards with movies to browse.

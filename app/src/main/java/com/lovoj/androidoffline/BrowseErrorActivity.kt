@@ -1,4 +1,4 @@
-package com.example.tvoffline
+package com.lovoj.androidoffline
 
 import android.os.Bundle
 import android.os.Handler
@@ -11,10 +11,9 @@ import android.widget.FrameLayout
 import android.widget.ProgressBar
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
+import com.lovoj.androidoffline.R
+import com.lovoj.tvoffline.MainFragment
 
-/**
- * BrowseErrorActivity shows how to use ErrorFragment.
- */
 class BrowseErrorActivity : FragmentActivity() {
 
     private lateinit var mErrorFragment: ErrorFragment

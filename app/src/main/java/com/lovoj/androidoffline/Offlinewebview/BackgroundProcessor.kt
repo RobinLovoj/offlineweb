@@ -1,6 +1,6 @@
 @file:Suppress("DEPRECATION")
 
-package com.example.tvoffline.Offlinewebview
+package com.lovoj.androidoffline.Offlinewebview
 
 import android.annotation.SuppressLint
 import android.content.Context

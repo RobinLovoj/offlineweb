@@ -1,4 +1,4 @@
-package com.example.tvoffline
+package com.lovoj.androidoffline
 
 import java.io.Serializable
 

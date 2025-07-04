@@ -1,7 +1,8 @@
-package com.example.tvoffline
+package com.lovoj.androidoffline
 
 import android.os.Bundle
 import androidx.fragment.app.FragmentActivity
+import com.lovoj.androidoffline.R
 
 /**
  * Details activity class that loads [VideoDetailsFragment] class.

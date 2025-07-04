@@ -1,4 +1,4 @@
-package com.example.tvoffline
+package com.lovoj.androidoffline
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
@@ -18,8 +18,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.ViewModelProvider
 import androidx.core.content.edit
-import com.example.tvoffline.Offlinewebview.OfflineWebview
-import com.example.tvoffline.databinding.ActivityLoginBinding
+import com.lovoj.androidoffline.Offlinewebview.OfflineWebview
+import com.lovoj.androidoffline.databinding.ActivityLoginBinding
 
 class LoginActivity : AppCompatActivity() {
 

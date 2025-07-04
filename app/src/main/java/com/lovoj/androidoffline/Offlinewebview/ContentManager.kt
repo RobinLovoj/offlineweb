@@ -1,4 +1,4 @@
-package com.example.tvoffline.Offlinewebview
+package com.lovoj.androidoffline.Offlinewebview
 
 import android.os.Handler
 import android.os.Looper
@@ -64,7 +64,6 @@ class ContentManager(private val baseDir: File) {
                 }
                 zipFile.delete()
                 Log.d("ContentManager", "Deleted temp zip file")
-                removeUnderscoresRecursively(baseDir)
                 val distIndex = File(baseDir, "dist/index.html")
                 if (!distIndex.exists()) {
                     Log.e("ContentManager", "index.html not found after extraction!")
@@ -100,34 +99,12 @@ class ContentManager(private val baseDir: File) {
         try {
             val womenBodyDir = File(baseDir, "3dmodel/experience/assets/body/women")
             val oldOnePiece = File(womenBodyDir, "one_piece_dress")
-            val newOnePiece = File(womenBodyDir, "onepiecedress")
+            val newOnePiece = File(womenBodyDir, "one_piece_dress")
             if (oldOnePiece.exists() && !newOnePiece.exists()) {
                 oldOnePiece.renameTo(newOnePiece)
             }
         } catch (e: Exception) {
             Log.e("ContentManager", "Error fixing folder names: ${e.message}", e)
-        }
-    }
-
-    // Recursively remove underscores from all folder and file names
-    private fun removeUnderscoresRecursively(dir: File) {
-        dir.listFiles()?.forEach { file ->
-            if (file.isDirectory) {
-                removeUnderscoresRecursively(file)
-                if (file.name.contains("_")) {
-                    val newFile = File(file.parentFile, file.name.replace("_", ""))
-                    if (!newFile.exists()) {
-                        file.renameTo(newFile)
-                    }
-                }
-            } else {
-                if (file.name.contains("_")) {
-                    val newFile = File(file.parentFile, file.name.replace("_", ""))
-                    if (!newFile.exists()) {
-                        file.renameTo(newFile)
-                    }
-                }
-            }
         }
     }
 } 

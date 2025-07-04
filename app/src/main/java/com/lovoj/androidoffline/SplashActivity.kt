@@ -1,4 +1,4 @@
-package com.example.tvoffline
+package com.lovoj.androidoffline
 
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
@@ -17,7 +17,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import com.example.tvoffline.Offlinewebview.OfflineWebview
+import com.lovoj.androidoffline.Offlinewebview.OfflineWebview
 import kotlinx.coroutines.*
 import java.net.URL
 import kotlin.system.measureTimeMillis
@@ -96,7 +96,7 @@ class SplashActivity : AppCompatActivity() {
             startActivity(intent)
         } else {
             if (isInternetAvailable()) {
-                val intent = Intent(this, OfflineWebview::class.java)
+                val intent = Intent(this, LoginActivity::class.java)
                 startActivity(intent)
             } else {
                 Toast.makeText(

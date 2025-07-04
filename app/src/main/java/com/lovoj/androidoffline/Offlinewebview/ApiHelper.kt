@@ -1,4 +1,4 @@
-package com.example.tvoffline.Offlinewebview
+package com.lovoj.androidoffline.Offlinewebview
 
 import android.util.Log
 import android.webkit.WebResourceResponse

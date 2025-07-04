@@ -1,4 +1,4 @@
-package com.example.tvoffline.Adapter
+package com.lovoj.androidoffline.Adapter
 
 
 

@@ -1,4 +1,4 @@
-package com.example.tvoffline
+package com.lovoj.androidoffline
 
 import androidx.leanback.widget.AbstractDetailsDescriptionPresenter
 

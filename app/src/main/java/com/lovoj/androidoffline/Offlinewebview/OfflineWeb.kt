@@ -1,22 +1,29 @@
 @file:Suppress("DEPRECATION")
 
-package com.example.tvoffline.Offlinewebview
+package com.lovoj.androidoffline.Offlinewebview
 
 import android.app.ProgressDialog
+import android.graphics.Bitmap
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.view.View
 import android.webkit.WebView
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import com.example.tvoffline.R
 import android.util.Log
 import androidx.core.view.isVisible
 import android.webkit.JavascriptInterface
+import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
+import android.webkit.WebViewClient
+import com.lovoj.androidoffline.Offlinewebview.ContentManager
+import com.lovoj.androidoffline.Offlinewebview.WebViewSetup
+import com.lovoj.androidoffline.R
+import java.io.File
 
 
 @RequiresApi(Build.VERSION_CODES.M)
@@ -30,7 +37,7 @@ class OfflineWebview : AppCompatActivity() {
     private lateinit var apiHelper: ApiHelper
     private lateinit var webViewSetup: WebViewSetup
     private val baseDir by lazy {
-        java.io.File(filesDir, "offline_web").also { if (!it.exists()) it.mkdirs() }
+        File(filesDir, "offline_web").also { if (!it.exists()) it.mkdirs() }
     }
     private var localWebServer: LocalWebServer? = null
 
@@ -52,7 +59,7 @@ class OfflineWebview : AppCompatActivity() {
         contentManager = ContentManager(baseDir)
         webViewSetup = WebViewSetup(this)
 
-        val distDir = java.io.File(baseDir, "dist")
+        val distDir = File(baseDir, "dist")
         Log.d("TAG", "onCreate: Data " + distDir.toString());
         localWebServer = LocalWebServer(distDir, 8080)
         localWebServer?.start()
@@ -62,11 +69,11 @@ class OfflineWebview : AppCompatActivity() {
             "AndroidBackgroundProcessor"
         )
 
-        webView.webViewClient = object : android.webkit.WebViewClient() {
+        webView.webViewClient = object : WebViewClient() {
             override fun onPageStarted(
                 view: WebView?,
                 url: String?,
-                favicon: android.graphics.Bitmap?
+                favicon: Bitmap?
             ) {
                 super.onPageStarted(view, url, favicon)
                 Log.d("OfflineWebview", "WebView onPageStarted: $url")
@@ -95,8 +102,8 @@ class OfflineWebview : AppCompatActivity() {
 
             override fun onReceivedError(
                 view: WebView?,
-                request: android.webkit.WebResourceRequest?,
-                error: android.webkit.WebResourceError?
+                request: WebResourceRequest?,
+                error: WebResourceError?
             ) {
                 super.onReceivedError(view, request, error)
                 Log.e(
@@ -127,7 +134,7 @@ class OfflineWebview : AppCompatActivity() {
             }
         )
 
-        android.os.Handler(mainLooper).postDelayed({
+        Handler(mainLooper).postDelayed({
             if (progressBar.isVisible) {
                 progressBar.visibility = View.GONE
                 Log.e("OfflineWebview", "Loader timeout: forcibly hiding loader after 10 seconds.")
@@ -138,8 +145,8 @@ class OfflineWebview : AppCompatActivity() {
     }
 
     private fun loadContent() {
-        val distIndex = java.io.File(baseDir, "dist/index.html")
-        val directIndex = java.io.File(baseDir, "index.html")
+        val distIndex = File(baseDir, "dist/index.html")
+        val directIndex = File(baseDir, "index.html")
         // Always load /index.html when server root is 'dist'
         val url = "http://localhost:8080/"
         Log.d("OfflineWebview","Started Loading $url")

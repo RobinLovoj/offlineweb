@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.tvoffline'
+    namespace 'com.lovoj.androidoffline'
     compileSdk 35
 
     defaultConfig {
-        applicationId "com.example.tvoffline"
+        applicationId "com.lovoj.androidoffline"
         minSdk 21
         targetSdk 35
         versionCode 1

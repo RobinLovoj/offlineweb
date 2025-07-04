@@ -1,13 +1,13 @@
-package com.example.tvoffline
+package com.lovoj.androidoffline
 
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.tvoffline.network.LoginRequest
-import com.example.tvoffline.network.LoginResponse
-import com.example.tvoffline.network.RetrofitClient
+import com.lovoj.androidoffline.network.LoginRequest
+import com.lovoj.androidoffline.network.LoginResponse
+import com.lovoj.androidoffline.network.RetrofitClient
 import kotlinx.coroutines.launch
 
 class LoginViewModel : ViewModel() {

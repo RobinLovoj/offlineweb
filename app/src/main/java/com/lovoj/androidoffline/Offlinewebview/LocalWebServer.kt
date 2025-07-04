@@ -1,4 +1,4 @@
-package com.example.tvoffline.Offlinewebview
+package com.lovoj.androidoffline.Offlinewebview
 
 import fi.iki.elonen.NanoHTTPD
 import java.io.File
