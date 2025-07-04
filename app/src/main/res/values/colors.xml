@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Default Android Theme Colors (Required) -->
-    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_500">#EE03C9</color>
     <color name="purple_700">#FF3700B3</color>
     <color name="teal_200">#FF03DAC5</color>
     <color name="teal_700">#FF018786</color>

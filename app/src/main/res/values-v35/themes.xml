@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.TVOffline" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="colorPrimary">#EE03C9</item>
+        <item name="colorPrimaryVariant">#EE03C9</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">#EE03C9</item>
+        <item name="colorSecondaryVariant">#EE03C9</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:windowBackground">@color/tv_background</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
+    </style>
+</resources>
