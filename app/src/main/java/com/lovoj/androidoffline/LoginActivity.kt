@@ -20,6 +20,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.core.content.edit
 import com.lovoj.androidoffline.Offlinewebview.OfflineWebview
 import com.lovoj.androidoffline.databinding.ActivityLoginBinding
+import android.widget.TextView
 
 class LoginActivity : AppCompatActivity() {
 
@@ -28,11 +29,16 @@ class LoginActivity : AppCompatActivity() {
     private var loadingAnimation: AnimatorSet? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Apply Lovoj app theme
+        LovojAppTheme.applyTheme(this, LovojAppTheme.THEME_LOVOJ_APP)
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_login)
         binding.lifecycleOwner = this
+
+        // Apply Lovoj colors programmatically
+        applyLovojColors()
 
         viewModel = ViewModelProvider(this)[LoginViewModel::class.java]
         binding.viewModel = viewModel
@@ -78,6 +84,27 @@ class LoginActivity : AppCompatActivity() {
                 stopLoadingAnimation()
             }
         }
+    }
+
+    private fun applyLovojColors() {
+        // Get Lovoj colors for white background theme
+        val pinkButtonColor = LovojAppColors.getColor(this, R.color.pink_button)
+        val whiteTextColor = LovojAppColors.getColor(this, R.color.white_text)
+        val blackTextColor = LovojAppColors.getColor(this, R.color.black)
+        val backgroundWhiteColor = LovojAppColors.getColor(this, R.color.background_white)
+        val greyTextColor = LovojAppColors.getColor(this, R.color.grey_text)
+        
+        // Apply colors to login button only (other colors are set in XML)
+        binding.loginButton?.let { button ->
+            button.setBackgroundColor(pinkButtonColor)
+            button.setTextColor(whiteTextColor)
+        }
+        
+        // Apply white background color to root
+        binding.root.setBackgroundColor(backgroundWhiteColor)
+        
+        // Set status bar color to pink
+        window.statusBarColor = pinkButtonColor
     }
 
     private fun startLoadingAnimation() {

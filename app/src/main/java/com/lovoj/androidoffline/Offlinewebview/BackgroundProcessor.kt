@@ -34,10 +34,18 @@ class BackgroundProcessor(
     private var backgroundLogs = mutableListOf<String>()
     private var backgroundStatus = "Idle"
     private var backgroundStartTime: Long = 0
+    
+    // Memory management integration
+    private var memoryManagerIntegration: MemoryManagerIntegration? = null
 
     fun processCacheDataUrlInBackground(url: String) {
         Log.d("BackgroundWebView", "Processing cache-data URL in background: $url")
         addBackgroundLog("Starting background processing for: $url")
+
+        // Initialize memory manager if not already done
+        if (memoryManagerIntegration == null) {
+            memoryManagerIntegration = MemoryManagerIntegration(context, baseDir)
+        }
 
         if (isBackgroundProcessing) {
             backgroundQueue.add(url)
@@ -92,6 +100,9 @@ class BackgroundProcessor(
                 blockNetworkImage = true
                 blockNetworkLoads = false
             }
+            
+            // Register with memory manager
+            memoryManagerIntegration?.registerWebView("background_webview", this)
             webViewClient = object : WebViewClient() {
                 override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
                     val url = request.url.toString()
@@ -115,9 +126,14 @@ class BackgroundProcessor(
                 override fun onReceivedError(view: WebView?, request: WebResourceRequest?, error: WebResourceError?) {
                     addBackgroundLog("Error loading resource: ${request?.url} - ${error?.description}")
                     backgroundStatus = "Error"
+                    
+                    // Handle cache data errors with memory manager
+                    val errorMessage = "Background processing error: ${error?.description}"
+                    memoryManagerIntegration?.handleBackgroundCacheError(errorMessage, request?.url?.toString())
+                    
                     val callbackId = callbackMap[request?.url?.toString() ?: ""]
                     if (callbackId != null) {
-                        sendCallbackToWeb(callbackId, "Background processing error: ${error?.description}", true)
+                        sendCallbackToWeb(callbackId, errorMessage, true)
                     }
                 }
             }
@@ -200,6 +216,10 @@ class BackgroundProcessor(
     fun cleanupBackgroundWebView() {
         backgroundWebView?.let { bgWebView ->
             addBackgroundLog("Cleaning up background WebView")
+            
+            // Unregister from memory manager
+            memoryManagerIntegration?.unregisterWebView("background_webview")
+            
             bgWebView.stopLoading()
             bgWebView.loadUrl("about:blank")
             bgWebView.destroy()
@@ -209,6 +229,41 @@ class BackgroundProcessor(
             isBackgroundProcessing = false
             processNextInQueue()
         }
+    }
+
+    /**
+     * Force memory cleanup when system detects high memory usage
+     */
+    fun forceMemoryCleanup() {
+        addBackgroundLog("Forcing memory cleanup due to system pressure")
+        memoryManagerIntegration?.forceMemoryCleanup()
+        
+        // Also cleanup background WebView if it exists
+        if (backgroundWebView != null) {
+            cleanupBackgroundWebView()
+        }
+    }
+
+    /**
+     * Get memory statistics
+     */
+    fun getMemoryStats(): Map<String, Any>? {
+        return memoryManagerIntegration?.getMemoryStats()
+    }
+
+    /**
+     * Check if memory pressure is high
+     */
+    fun isMemoryPressureHigh(): Boolean {
+        return memoryManagerIntegration?.isMemoryPressureHigh() ?: false
+    }
+
+    /**
+     * Handle cache data errors from background processing
+     */
+    fun handleCacheDataError(error: String, url: String? = null) {
+        addBackgroundLog("Handling cache data error: $error")
+        memoryManagerIntegration?.handleBackgroundCacheError(error, url)
     }
 
     fun sendCallbackToWeb(callbackId: String, data: String, isError: Boolean) {

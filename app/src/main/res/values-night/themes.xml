@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Lovoj App Dark Theme (Night Mode) -->
+    <style name="Theme.LovojApp" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Color Scheme -->
+        <item name="colorPrimary">@color/pink_button</item>
+        <item name="colorPrimaryVariant">@color/primary_700</item>
+        <item name="colorOnPrimary">@color/white_text</item>
+        <item name="colorSecondary">@color/black</item>
+        <item name="colorSecondaryVariant">@color/black_grey</item>
+        <item name="colorOnSecondary">@color/white_text</item>
+        
+        <!-- Text Colors -->
+        <item name="android:textColorPrimary">@color/white_text</item>
+        <item name="android:textColorSecondary">@color/grey_text</item>
+        
+        <!-- Background Colors -->
+        <item name="android:windowBackground">@color/background_black</item>
+        <item name="colorSurface">@color/background_black</item>
+        <item name="colorOnSurface">@color/white_text</item>
+        
+        <!-- Status and Navigation Bar -->
+        <item name="android:statusBarColor">@color/pink_button</item>
+        <item name="android:navigationBarColor">@color/transparent</item>
+        
+        <!-- Card Style -->
+        <item name="cardBackgroundColor">@color/background_black</item>
+        <item name="cardElevation">2dp</item>
+        <item name="cardCornerRadius">12dp</item>
+        
+        <!-- Button Style -->
+        <item name="materialButtonStyle">@style/Widget.LovojApp.Button</item>
+        
+        <!-- Input Style -->
+        <item name="textInputStyle">@style/Widget.LovojApp.TextInputLayout</item>
+    </style>
+
+    <!-- TV Theme for Android TV (Dark Mode) -->
+    <style name="Theme.LovojApp.TV" parent="Theme.MaterialComponents.NoActionBar">
+        <!-- Color Scheme -->
+        <item name="colorPrimary">@color/pink_button</item>
+        <item name="colorPrimaryVariant">@color/pink_button</item>
+        <item name="colorOnPrimary">@color/white_text</item>
+        <item name="colorSecondary">@color/pink_button</item>
+        <item name="colorSecondaryVariant">@color/pink_button</item>
+        <item name="colorOnSecondary">@color/white_text</item>
+        
+        <!-- Text Colors -->
+        <item name="android:textColorPrimary">@color/white_text</item>
+        <item name="android:textColorSecondary">@color/grey_text</item>
+        
+        <!-- Background Colors -->
+        <item name="android:windowBackground">@color/tv_background</item>
+        <item name="colorSurface">@color/tv_surface</item>
+        <item name="colorOnSurface">@color/white_text</item>
+        
+        <!-- Status and Navigation Bar -->
+        <item name="android:statusBarColor">@color/pink_button</item>
+        <item name="android:navigationBarColor">@color/transparent</item>
+        
+        <!-- Card Style -->
+        <item name="cardBackgroundColor">@color/background_black</item>
+        <item name="cardElevation">2dp</item>
+        <item name="cardCornerRadius">12dp</item>
+        
+        <!-- Button Style -->
+        <item name="materialButtonStyle">@style/Widget.LovojApp.Button</item>
+        
+        <!-- Input Style -->
+        <item name="textInputStyle">@style/Widget.LovojApp.TextInputLayout</item>
+    </style>
+</resources> 

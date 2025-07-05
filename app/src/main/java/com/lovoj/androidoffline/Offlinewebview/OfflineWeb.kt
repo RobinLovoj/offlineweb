@@ -36,6 +36,8 @@ class OfflineWebview : AppCompatActivity() {
     private lateinit var contentManager: ContentManager
     private lateinit var apiHelper: ApiHelper
     private lateinit var webViewSetup: WebViewSetup
+    private lateinit var memoryManagerIntegration: MemoryManagerIntegration
+    
     private val baseDir by lazy {
         File(filesDir, "offline_web").also { if (!it.exists()) it.mkdirs() }
     }
@@ -47,6 +49,10 @@ class OfflineWebview : AppCompatActivity() {
 
         webView = findViewById(R.id.webview)
         progressBar = findViewById(R.id.loading_indicator)
+
+        memoryManagerIntegration = MemoryManagerIntegration(this, baseDir)
+        
+        setupMemoryPressureCallbacks()
 
         apiHelper = ApiHelper()
         backgroundProcessor = BackgroundProcessor(
@@ -69,6 +75,8 @@ class OfflineWebview : AppCompatActivity() {
             "AndroidBackgroundProcessor"
         )
 
+        memoryManagerIntegration.registerWebView("offline_webview", webView)
+
         webView.webViewClient = object : WebViewClient() {
             override fun onPageStarted(
                 view: WebView?,
@@ -83,10 +91,13 @@ class OfflineWebview : AppCompatActivity() {
                 super.onPageFinished(view, url)
                 Log.d("OfflineWebview", "WebView onPageFinished: $url")
                 progressBar.visibility = View.GONE
+                
+                if (url != null) {
+                    Log.d("OfflineWebview", "Page loaded successfully: $url")
+                }
             }
 
-            override fun onLoadResource(view: WebView?, url: String?) {0
-
+            override fun onLoadResource(view: WebView?, url: String?) {
                 super.onLoadResource(view, url)
                 Log.d("OfflineWebview", "Loading Resource: $url")
             }
@@ -97,7 +108,10 @@ class OfflineWebview : AppCompatActivity() {
                 errorResponse: WebResourceResponse?
             ) {
                 super.onReceivedHttpError(view, request, errorResponse)
-                Log.d("OfflineWebview", "Recieved SSL Error : $request")
+                Log.d("OfflineWebview", "Received SSL Error : $request")
+                
+                val errorMessage = "HTTP Error: ${errorResponse?.statusCode}"
+                memoryManagerIntegration.handleBackgroundCacheError(errorMessage, request?.url?.toString())
             }
 
             override fun onReceivedError(
@@ -111,6 +125,9 @@ class OfflineWebview : AppCompatActivity() {
                     "WebView onReceivedError: ${request?.url}, error: ${error?.description}"
                 )
                 progressBar.visibility = View.GONE
+                
+                val errorMessage = "WebView Error: ${error?.description}"
+                memoryManagerIntegration.handleBackgroundCacheError(errorMessage, request?.url?.toString())
             }
         }
 
@@ -131,6 +148,8 @@ class OfflineWebview : AppCompatActivity() {
                 progressDialog.dismiss()
                 Toast.makeText(this, "Error: $errorMsg", Toast.LENGTH_LONG).show()
                 progressBar.visibility = View.GONE
+                
+                memoryManagerIntegration.handleBackgroundCacheError("Content loading error: $errorMsg")
             }
         )
 
@@ -140,8 +159,61 @@ class OfflineWebview : AppCompatActivity() {
                 Log.e("OfflineWebview", "Loader timeout: forcibly hiding loader after 10 seconds.")
             }
         }, 10000)
+    }
 
 
+    private fun setupMemoryPressureCallbacks() {
+        memoryManagerIntegration.setMemoryPressureCallback { isHighPressure ->
+            if (isHighPressure) {
+                Log.w("OfflineWebview", "High memory pressure detected")
+                handleMemoryPressure()
+            }
+        }
+
+        memoryManagerIntegration.setErrorCallback { errorType, errorMessage ->
+            Log.e("OfflineWebview", "Memory manager error [$errorType]: $errorMessage")
+            handleMemoryError(errorType, errorMessage)
+        }
+    }
+
+
+    private fun handleMemoryPressure() {
+        runOnUiThread {
+            Toast.makeText(
+                this,
+                "Optimizing memory for better performance...",
+                Toast.LENGTH_SHORT
+            ).show()
+            
+            Log.d("OfflineWebview", "Memory pressure handled automatically")
+        }
+    }
+
+
+    private fun handleMemoryError(errorType: String, errorMessage: String) {
+        runOnUiThread {
+            when (errorType) {
+                "BACKGROUND_CACHE_ERROR" -> {
+                    Log.w("OfflineWebview", "Background cache error: $errorMessage")
+                }
+                "MEMORY_CLEANUP_ERROR" -> {
+                    Log.e("OfflineWebview", "Memory cleanup error: $errorMessage")
+                    reloadContentIfNeeded()
+                }
+                else -> {
+                    Log.e("OfflineWebview", "Unknown memory error [$errorType]: $errorMessage")
+                }
+            }
+        }
+    }
+
+
+    private fun reloadContentIfNeeded() {
+        val currentUrl = webView.url
+        if (currentUrl.isNullOrEmpty() || currentUrl == "about:blank") {
+            Log.d("OfflineWebview", "Reloading content after memory cleanup")
+            loadContent()
+        }
     }
 
     private fun loadContent() {
@@ -170,17 +242,31 @@ class OfflineWebview : AppCompatActivity() {
         super.onDestroy()
         localWebServer?.stop()
         backgroundProcessor.cleanupBackgroundWebView()
+        
+        memoryManagerIntegration.unregisterWebView("offline_webview")
+        memoryManagerIntegration.cleanup()
+    }
+
+
+    fun getMemoryStats(): Map<String, Any>? {
+        return memoryManagerIntegration.getMemoryStats()
+    }
+
+
+    fun forceMemoryCleanup() {
+        memoryManagerIntegration.forceMemoryCleanup()
     }
 }
 
 class BackgroundProcessorInterface(private val activity: OfflineWebview) {
     @JavascriptInterface
-    fun onWebLoadingFinished(callbackId: String, type: String, data: String) {
-        Log.d("BackgroundCallback", "Callback received: id=$callbackId, type=$type, data=$data")
+    fun onWebLoadingFinished(data: Boolean) {
+        val dataStr = data.toString() ?: "null"
+        Log.d("BackgroundCallback", "WebView data received: $dataStr")
         activity.runOnUiThread {
             Toast.makeText(
                 activity,
-                "Callback received: $callbackId, $type, $data",
+                dataStr,
                 Toast.LENGTH_SHORT
             ).show()
         }

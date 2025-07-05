@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background_white"
+    android:padding="16dp">
+
+    <!-- Lovoj App Title -->
+    <TextView
+        android:id="@+id/lovojTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Lovoj App"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:gravity="center"
+        android:layout_marginBottom="24dp" />
+
+    <!-- Pink Button using Lovoj colors -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/lovojPinkButton"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:text="Pink Lovoj Button"
+        android:textSize="18sp"
+        android:textColor="@color/white_text"
+        android:backgroundTint="@color/pink_button"
+        app:cornerRadius="12dp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Primary Color Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/lovojPrimaryButton"
+        android:layout_width="match_parent"
+        android:layout_height="64dp"
+        android:text="Primary Color Button"
+        android:textSize="18sp"
+        android:textColor="@color/white_text"
+        android:backgroundTint="@color/primary_color"
+        app:cornerRadius="12dp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Card with Lovoj colors -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        app:cardBackgroundColor="@color/background_white"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        app:strokeColor="@color/pink_button"
+        app:strokeWidth="2dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Lovoj Card Title"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:layout_marginBottom="8dp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="This card uses Lovoj app colors and styling. The border is pink and the background is white."
+                android:textSize="16sp"
+                android:textColor="@color/grey_text" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Text Input with Lovoj colors -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        style="@style/Widget.LovojApp.TextInputLayout"
+        android:hint="Enter your text">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/black"
+            android:inputType="text" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Custom Lovoj Button -->
+    <com.lovoj.androidoffline.LovojButton
+        android:id="@+id/customLovojButton"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Color Palette Display -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Lovoj Color Palette:"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:layout_marginBottom="8dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="16dp">
+
+        <!-- Pink Color Swatch -->
+        <View
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:background="@color/pink_button"
+            android:layout_marginEnd="8dp" />
+
+        <!-- Primary Color Swatch -->
+        <View
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:background="@color/primary_color"
+            android:layout_marginEnd="8dp" />
+
+        <!-- Secondary Color Swatch -->
+        <View
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:background="@color/secondary_color" />
+
+    </LinearLayout>
+
+    <!-- Status Text -->
+    <TextView
+        android:id="@+id/statusText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Lovoj colors applied successfully!"
+        android:textSize="16sp"
+        android:textColor="@color/grey_text"
+        android:gravity="center"
+        android:layout_marginTop="16dp" />
+
+</LinearLayout> 

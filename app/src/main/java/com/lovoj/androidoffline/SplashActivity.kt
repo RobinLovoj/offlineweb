@@ -29,14 +29,31 @@ class SplashActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
+        // Apply Lovoj app theme
+        LovojAppTheme.applyTheme(this, LovojAppTheme.THEME_LOVOJ_APP_SPLASH)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
         splashLogo = findViewById(R.id.splashLogo)
-        appName = findViewById(R.id.appName)
-        loadingIndicator = findViewById(R.id.loadingIndicator)
+
+        applyLovojColors()
 
         startAnimations()
+    }
+
+    private fun applyLovojColors() {
+        // Get Lovoj colors for white background theme
+        val blackTextColor = LovojAppColors.getColor(this, R.color.black)
+        val pinkColor = LovojAppColors.getColor(this, R.color.pink_button)
+        val backgroundWhiteColor = LovojAppColors.getColor(this, R.color.background_white)
+        
+
+        
+        // Apply colors to loading indicator
+//        loadingIndicator.setBackgroundColor(backgroundWhiteColor)
+        
+        // Set status bar color to pink
+        window.statusBarColor = pinkColor
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
@@ -45,8 +62,7 @@ class SplashActivity : AppCompatActivity() {
         val logoScaleX = ObjectAnimator.ofFloat(splashLogo, View.SCALE_X, 0.5f, 1f)
         val logoScaleY = ObjectAnimator.ofFloat(splashLogo, View.SCALE_Y, 0.5f, 1f)
 
-        val nameFadeIn = ObjectAnimator.ofFloat(appName, View.ALPHA, 0f, 1f)
-        val nameSlideUp = ObjectAnimator.ofFloat(appName, View.TRANSLATION_Y, 50f, 0f)
+
 
         AnimatorSet().apply {
             playTogether(logoFadeIn, logoScaleX, logoScaleY)
@@ -57,7 +73,6 @@ class SplashActivity : AppCompatActivity() {
         }
 
         AnimatorSet().apply {
-            playTogether(nameFadeIn, nameSlideUp)
             interpolator = AccelerateDecelerateInterpolator()
             duration = 800
             startDelay = 1000

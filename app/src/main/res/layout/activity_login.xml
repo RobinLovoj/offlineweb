@@ -16,7 +16,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#000000">
+            android:background="@color/background_white">
 
             <LinearLayout
                 android:id="@+id/verticalLayout"
@@ -29,14 +29,14 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintWidth_percent="0.6">
+                app:layout_constraintWidth_percent="0.9">
 
                 <ImageView
                     android:id="@+id/logoImage"
                     android:layout_width="180dp"
                     android:layout_height="180dp"
                     android:layout_gravity="center_horizontal"
-                    android:src="@drawable/lovojlo" />
+                    android:src="@drawable/spl" />
 
                 <TextView
                     android:id="@+id/appTitle"
@@ -45,7 +45,7 @@
                     android:layout_marginTop="24dp"
                     android:fontFamily="sans-serif-medium"
                     android:text="Welcome Back"
-                    android:textColor="@color/white"
+                    android:textColor="@color/black"
                     android:textSize="36sp"
                     android:textStyle="bold"
                     app:autoSizeTextType="uniform"
@@ -54,53 +54,43 @@
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/emailInput"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.LovojApp.TextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="32dp"
                     android:hint="Email"
-                    android:textColorHint="#FFFFFF"
-                    app:boxStrokeColor="@color/text_input_box_stroke"
-                    app:boxStrokeWidth="2dp"
-                    app:boxStrokeWidthFocused="2dp"
-                    app:boxBackgroundColor="#1A1A1A"
+                    app:boxBackgroundColor="@color/background_white"
                     app:errorEnabled="true"
-                    app:error="@{viewModel.emailError}"
-                    app:hintTextColor="@color/white">
+                    app:error="@{viewModel.emailError}">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textEmailAddress"
                         android:text="@={viewModel.email}"
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/black"
                         android:enabled="@{!viewModel.isLoading}" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/passwordInput"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.LovojApp.TextInputLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:hint="Password"
-                    android:textColorHint="#FFFFFF"
-                    app:boxStrokeColor="@color/text_input_box_stroke"
-                    app:boxStrokeWidth="2dp"
-                    app:boxStrokeWidthFocused="2dp"
-                    app:boxBackgroundColor="#1A1A1A"
+                    app:boxBackgroundColor="@color/background_white"
                     app:errorEnabled="true"
                     app:error="@{viewModel.passwordError}"
-                    app:hintTextColor="@color/white"
                     app:passwordToggleEnabled="true"
-                    app:passwordToggleTint="@color/white">
+                    app:passwordToggleTint="@color/pink_button">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textPassword"
                         android:text="@={viewModel.password}"
-                        android:textColor="#FFFFFF"
+                        android:textColor="@color/black"
                         android:enabled="@{!viewModel.isLoading}" />
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -109,9 +99,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="64dp"
                     android:layout_marginTop="32dp"
-                    android:backgroundTint="@color/purple_500"
+                    android:backgroundTint="@color/pink_button"
                     android:onClick="@{() -> viewModel.onLoginClicked()}"
                     android:text="Sign In"
+                    android:textColor="@color/white_text"
                     android:textSize="18sp"
                     android:enabled="@{!viewModel.isLoading}"
                     app:cornerRadius="12dp" />
@@ -124,7 +115,7 @@
                     android:fontFamily="sans-serif-light"
                     android:gravity="center"
                     android:text="Experience 3D content\nwithout boundaries"
-                    android:textColor="#E6FFFFFF"
+                    android:textColor="@color/grey_text"
                     android:textSize="18sp"
                     app:autoSizeTextType="uniform"
                     app:autoSizeMinTextSize="10sp"
@@ -137,7 +128,7 @@
             android:id="@+id/loadingOverlay"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="#CC000000"
+            android:background="#CCFFFFFF"
             android:visibility="@{viewModel.isLoading ? View.VISIBLE : View.GONE}"
             android:clickable="true"
             android:focusable="true"
@@ -154,14 +145,14 @@
                     android:id="@+id/loadingLogo"
                     android:layout_width="120dp"
                     android:layout_height="120dp"
-                    android:src="@drawable/lovojlo" />
+                    android:src="@drawable/spl" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:text="Signing in..."
-                    android:textColor="@color/white"
+                    android:textColor="@color/black"
                     android:textSize="18sp" />
 
             </LinearLayout>
