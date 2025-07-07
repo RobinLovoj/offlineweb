@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#181A20">
+
+    <!-- Men/Women Toggle Tabs -->
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/toggleGender"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="34dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginHorizontal="24dp"
+        app:singleSelection="true"
+        app:checkedButton="@id/btnMen">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnMen"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="Men"
+            android:textAllCaps="false"
+            app:cornerRadius="24dp"
+            app:strokeColor="@color/white"
+            app:strokeWidth="2dp"
+            app:iconGravity="textStart"
+            app:backgroundTint="@color/tab_button_bg"
+            android:textColor="@color/tab_button_text"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnWomen"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:text="Women"
+            android:textAllCaps="false"
+            app:cornerRadius="24dp"
+            app:strokeColor="@color/white"
+            app:strokeWidth="2dp"
+            app:iconGravity="textStart"
+            app:backgroundTint="@color/tab_button_bg"
+            android:textColor="@color/tab_button_text"/>
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <!-- Product Grid -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerProducts"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingHorizontal="8dp"
+        android:clipToPadding="false"
+        android:overScrollMode="never"
+        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+        app:spanCount="2"/>
+
+</LinearLayout> 

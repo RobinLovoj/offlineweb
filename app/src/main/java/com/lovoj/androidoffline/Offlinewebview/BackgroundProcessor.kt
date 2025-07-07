@@ -34,7 +34,7 @@ class BackgroundProcessor(
     private var backgroundLogs = mutableListOf<String>()
     private var backgroundStatus = "Idle"
     private var backgroundStartTime: Long = 0
-    
+
     // Memory management integration
     private var memoryManagerIntegration: MemoryManagerIntegration? = null
 

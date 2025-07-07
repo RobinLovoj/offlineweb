@@ -20,19 +20,68 @@ import com.lovoj.androidoffline.Offlinewebview.OfflineWebview
 import kotlinx.coroutines.*
 import java.net.URL
 import kotlin.system.measureTimeMillis
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.webkit.JavascriptInterface
+import java.io.File
 
 @SuppressLint("CustomSplashScreen")
 class SplashActivity : AppCompatActivity() {
     private lateinit var loadingIndicator: View
     private lateinit var splashLogo: ImageView
     private lateinit var appName: TextView
+    private lateinit var backgroundWebView: WebView
+    private var isApiDone = false
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Apply Lovoj app theme
-        LovojAppTheme.applyTheme(this, LovojAppTheme.THEME_LOVOJ_APP_SPLASH)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
+
+
+        val prefs = getSharedPreferences("offlineweb_prefs", MODE_PRIVATE)
+        isApiDone = prefs.getBoolean("api_done", false)
+        if (isApiDone) {
+            startProductSelection()
+            return
+        }
+
+        // Background WebView setup
+        backgroundWebView = WebView(this)
+        backgroundWebView.settings.javaScriptEnabled = true
+        backgroundWebView.visibility = View.GONE
+        backgroundWebView.addJavascriptInterface(object {
+            @JavascriptInterface
+            fun onWebLoadingFinished(data: Boolean) {
+                if (data) {
+                    prefs.edit().putBoolean("api_done", true).apply()
+                    runOnUiThread {
+
+                        startProductSelection()
+                    }
+                }
+            }
+        }, "AndroidBackgroundProcessor")
+        backgroundWebView.webViewClient = object : WebViewClient() {}
+
+        // Start ZIP extraction and load cache-data URL after extraction
+        val baseDir = File(filesDir, "offline_web")
+        val contentManager = com.lovoj.androidoffline.Offlinewebview.ContentManager(baseDir)
+        contentManager.extractAndLoadContent(
+            onSuccess = {
+                val url = "http://localhost:8080/index.html#/cache-data"
+                backgroundWebView.loadUrl(url)
+            },
+            onError = {
+                runOnUiThread {
+
+                    Toast.makeText(this, "Failed to prepare content", Toast.LENGTH_LONG).show()
+                }
+            }
+        )
+
+        // Apply Lovoj app theme
+        LovojAppTheme.applyTheme(this, LovojAppTheme.THEME_LOVOJ_APP_SPLASH)
 
         splashLogo = findViewById(R.id.splashLogo)
 
@@ -148,5 +197,11 @@ class SplashActivity : AppCompatActivity() {
         } catch (e: Exception) {
             0.0
         }
+    }
+
+    private fun startProductSelection() {
+        val intent = Intent(this, ProductSelectionActivity::class.java)
+        startActivity(intent)
+        finish()
     }
 }

@@ -9,10 +9,7 @@ import androidx.fragment.app.FragmentActivity
 import com.lovoj.androidoffline.Offlinewebview.MemoryManagerIntegration
 import java.io.File
 
-/**
- * Example implementation showing how to integrate MemoryManager with your application
- * This class demonstrates best practices for memory management in Android apps
- */
+
 class MemoryManagerExample {
     companion object {
         private const val TAG = "MemoryManagerExample"
@@ -21,9 +18,7 @@ class MemoryManagerExample {
     private var memoryManagerIntegration: MemoryManagerIntegration? = null
     private var applicationContext: Context? = null
 
-    /**
-     * Initialize memory manager for the application
-     */
+
     fun initializeMemoryManager(context: Context, baseDir: File) {
         applicationContext = context.applicationContext
         memoryManagerIntegration = MemoryManagerIntegration(context, baseDir)
@@ -34,9 +29,7 @@ class MemoryManagerExample {
         setupMemoryPressureMonitoring()
     }
 
-    /**
-     * Setup memory pressure monitoring and automatic cleanup
-     */
+
     private fun setupMemoryPressureMonitoring() {
         memoryManagerIntegration?.setMemoryPressureCallback { isHighPressure ->
             if (isHighPressure) {
@@ -51,9 +44,7 @@ class MemoryManagerExample {
         }
     }
 
-    /**
-     * Handle high memory pressure situations
-     */
+
     private fun handleHighMemoryPressure() {
         // Show user notification
         showMemoryOptimizationNotification()
@@ -65,9 +56,7 @@ class MemoryManagerExample {
         Log.w(TAG, "Emergency memory cleanup performed due to high pressure")
     }
 
-    /**
-     * Handle memory manager errors
-     */
+
     private fun handleMemoryError(errorType: String, errorMessage: String) {
         when (errorType) {
             "BACKGROUND_CACHE_ERROR" -> {
@@ -86,9 +75,6 @@ class MemoryManagerExample {
         }
     }
 
-    /**
-     * Handle background cache errors
-     */
     private fun handleBackgroundCacheError(errorMessage: String) {
         // Clear problematic caches
         clearProblematicCaches()
@@ -97,9 +83,6 @@ class MemoryManagerExample {
         showCacheErrorNotification(errorMessage)
     }
 
-    /**
-     * Perform emergency cleanup when memory pressure is high
-     */
     private fun performEmergencyCleanup() {
         try {
             // Force immediate cleanup
@@ -118,9 +101,7 @@ class MemoryManagerExample {
         }
     }
 
-    /**
-     * Perform alternative cleanup methods
-     */
+
     private fun performAlternativeCleanup() {
         try {
             // Clear application cache
@@ -142,9 +123,7 @@ class MemoryManagerExample {
         }
     }
 
-    /**
-     * Clear problematic caches
-     */
+
     private fun clearProblematicCaches() {
         try {
             // Clear WebView databases
@@ -164,9 +143,6 @@ class MemoryManagerExample {
         }
     }
 
-    /**
-     * Clear system caches
-     */
     private fun clearSystemCaches() {
         try {
             // Clear application cache
@@ -188,9 +164,6 @@ class MemoryManagerExample {
         }
     }
 
-    /**
-     * Show memory optimization notification to user
-     */
     private fun showMemoryOptimizationNotification() {
         try {
             android.widget.Toast.makeText(

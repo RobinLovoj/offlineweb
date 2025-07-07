@@ -24,6 +24,9 @@ import com.lovoj.androidoffline.Offlinewebview.ContentManager
 import com.lovoj.androidoffline.Offlinewebview.WebViewSetup
 import com.lovoj.androidoffline.R
 import java.io.File
+import androidx.core.content.edit
+import android.content.Intent
+import com.lovoj.androidoffline.ProductSelectionActivity
 
 
 @RequiresApi(Build.VERSION_CODES.M)
@@ -37,7 +40,7 @@ class OfflineWebview : AppCompatActivity() {
     private lateinit var apiHelper: ApiHelper
     private lateinit var webViewSetup: WebViewSetup
     private lateinit var memoryManagerIntegration: MemoryManagerIntegration
-    
+
     private val baseDir by lazy {
         File(filesDir, "offline_web").also { if (!it.exists()) it.mkdirs() }
     }
@@ -51,7 +54,7 @@ class OfflineWebview : AppCompatActivity() {
         progressBar = findViewById(R.id.loading_indicator)
 
         memoryManagerIntegration = MemoryManagerIntegration(this, baseDir)
-        
+
         setupMemoryPressureCallbacks()
 
         apiHelper = ApiHelper()
@@ -91,10 +94,13 @@ class OfflineWebview : AppCompatActivity() {
                 super.onPageFinished(view, url)
                 Log.d("OfflineWebview", "WebView onPageFinished: $url")
                 progressBar.visibility = View.GONE
-                
+
                 if (url != null) {
                     Log.d("OfflineWebview", "Page loaded successfully: $url")
                 }
+                val prefs = getSharedPreferences("offlineweb_prefs", android.content.Context.MODE_PRIVATE)
+                val apiDone = prefs.getBoolean("api_done", false)
+                view?.evaluateJavascript("window.apiDoneFromAndroid = ${if (apiDone) "true" else "false"};", null)
             }
 
             override fun onLoadResource(view: WebView?, url: String?) {
@@ -109,7 +115,7 @@ class OfflineWebview : AppCompatActivity() {
             ) {
                 super.onReceivedHttpError(view, request, errorResponse)
                 Log.d("OfflineWebview", "Received SSL Error : $request")
-                
+
                 val errorMessage = "HTTP Error: ${errorResponse?.statusCode}"
                 memoryManagerIntegration.handleBackgroundCacheError(errorMessage, request?.url?.toString())
             }
@@ -125,7 +131,7 @@ class OfflineWebview : AppCompatActivity() {
                     "WebView onReceivedError: ${request?.url}, error: ${error?.description}"
                 )
                 progressBar.visibility = View.GONE
-                
+
                 val errorMessage = "WebView Error: ${error?.description}"
                 memoryManagerIntegration.handleBackgroundCacheError(errorMessage, request?.url?.toString())
             }
@@ -146,9 +152,13 @@ class OfflineWebview : AppCompatActivity() {
             },
             onError = { errorMsg ->
                 progressDialog.dismiss()
-                Toast.makeText(this, "Error: $errorMsg", Toast.LENGTH_LONG).show()
+                val distIndex = File(baseDir, "dist/index.html")
+                if (!distIndex.exists()) {
+                    Toast.makeText(this, "No Internet and no local content found. Please connect to the internet once.", Toast.LENGTH_LONG).show()
+                } else {
+                    loadContent() // fallback: try to load whatever is there
+                }
                 progressBar.visibility = View.GONE
-                
                 memoryManagerIntegration.handleBackgroundCacheError("Content loading error: $errorMsg")
             }
         )
@@ -184,7 +194,7 @@ class OfflineWebview : AppCompatActivity() {
                 "Optimizing memory for better performance...",
                 Toast.LENGTH_SHORT
             ).show()
-            
+
             Log.d("OfflineWebview", "Memory pressure handled automatically")
         }
     }
@@ -217,32 +227,27 @@ class OfflineWebview : AppCompatActivity() {
     }
 
     private fun loadContent() {
-        val distIndex = File(baseDir, "dist/index.html")
-        val directIndex = File(baseDir, "index.html")
-        // Always load /index.html when server root is 'dist'
-        val url = "http://localhost:8080/"
-        Log.d("OfflineWebview","Started Loading $url")
-        when {
-            distIndex.exists() -> {
-                Log.d("OfflineWebview", "Loading from local server: $url")
-                webView.loadUrl(url)
-            }
-            directIndex.exists() -> {
-                Log.d("OfflineWebview", "Loading from local server: $url")
-                webView.loadUrl(url)
-            }
-            else -> {
-                Log.e("OfflineWebview", "index.html not found in baseDir: ${baseDir.absolutePath}")
-                Toast.makeText(this, "index.html not found", Toast.LENGTH_LONG).show()
-            }
+        val prefs = getSharedPreferences("offlineweb_prefs", android.content.Context.MODE_PRIVATE)
+        val apiDone = prefs.getBoolean("api_done", false)
+        val intent = intent
+        val fabricUrl = intent.getStringExtra("fabric_url")
+        if (apiDone && fabricUrl == null) {
+            val selectionIntent = Intent(this, ProductSelectionActivity::class.java)
+            selectionIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+            startActivity(selectionIntent)
+            finish()
+            return
         }
+        val url = fabricUrl ?: "http://localhost:8080/"
+        Log.d("OfflineWebview","Starting WebView with url: $url")
+        webView.loadUrl(url)
     }
 
     override fun onDestroy() {
         super.onDestroy()
         localWebServer?.stop()
         backgroundProcessor.cleanupBackgroundWebView()
-        
+
         memoryManagerIntegration.unregisterWebView("offline_webview")
         memoryManagerIntegration.cleanup()
     }
@@ -261,14 +266,19 @@ class OfflineWebview : AppCompatActivity() {
 class BackgroundProcessorInterface(private val activity: OfflineWebview) {
     @JavascriptInterface
     fun onWebLoadingFinished(data: Boolean) {
-        val dataStr = data.toString() ?: "null"
-        Log.d("BackgroundCallback", "WebView data received: $dataStr")
-        activity.runOnUiThread {
-            Toast.makeText(
-                activity,
-                dataStr,
-                Toast.LENGTH_SHORT
-            ).show()
+        val prefs = activity.getSharedPreferences("offlineweb_prefs", android.content.Context.MODE_PRIVATE)
+        if (data) {
+            prefs.edit { putBoolean("api_done", true) }
+            activity.runOnUiThread {
+                val selectionIntent = Intent(activity, com.lovoj.androidoffline.ProductSelectionActivity::class.java)
+                selectionIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                activity.startActivity(selectionIntent)
+                activity.finish()
+            }
+        } else {
+            activity.runOnUiThread {
+                Toast.makeText(activity, data.toString(), Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }

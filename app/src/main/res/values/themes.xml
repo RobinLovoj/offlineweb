@@ -36,6 +36,12 @@
         <item name="textInputStyle">@style/Widget.LovojApp.TextInputLayout</item>
     </style>
 
+
+    <style name="ImageRoundCorner" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">16dp</item>
+    </style>
+
     <!-- Lovoj App Dark Theme -->
     <style name="Theme.LovojApp.Dark" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Color Scheme -->
