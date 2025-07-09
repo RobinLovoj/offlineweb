@@ -21,6 +21,7 @@ import androidx.core.content.edit
 import com.lovoj.androidoffline.Offlinewebview.OfflineWebview
 import com.lovoj.androidoffline.databinding.ActivityLoginBinding
 import android.widget.TextView
+import com.bumptech.glide.Glide
 
 class LoginActivity : AppCompatActivity() {
 
@@ -108,43 +109,49 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun startLoadingAnimation() {
+
+
+
         val loadingLogo = binding.loadingOverlay.findViewById<ImageView>(R.id.loadingLogo)
-        
-        // Create rotation animation
-        val rotation = ObjectAnimator.ofFloat(loadingLogo, View.ROTATION, 0f, 360f).apply {
-            duration = 1500
-            repeatCount = ObjectAnimator.INFINITE
-            interpolator = LinearInterpolator()
-        }
 
-        // Create pulse animation
-        val scaleX = ObjectAnimator.ofFloat(loadingLogo, View.SCALE_X, 0.8f, 1.2f).apply {
-            duration = 1000
-            repeatCount = ObjectAnimator.INFINITE
-            repeatMode = ObjectAnimator.REVERSE
-            interpolator = AccelerateDecelerateInterpolator()
-        }
-        
-        val scaleY = ObjectAnimator.ofFloat(loadingLogo, View.SCALE_Y, 0.8f, 1.2f).apply {
-            duration = 1000
-            repeatCount = ObjectAnimator.INFINITE
-            repeatMode = ObjectAnimator.REVERSE
-            interpolator = AccelerateDecelerateInterpolator()
-        }
+        Glide.with(this).asGif().load(R.drawable.overlay).into(loadingLogo)
 
-        // Create fade animation
-        val alpha = ObjectAnimator.ofFloat(loadingLogo, View.ALPHA, 0.6f, 1f).apply {
-            duration = 1000
-            repeatCount = ObjectAnimator.INFINITE
-            repeatMode = ObjectAnimator.REVERSE
-            interpolator = AccelerateDecelerateInterpolator()
-        }
-        
-        AnimatorSet().apply {
-            playTogether(rotation, scaleX, scaleY, alpha)
-            start()
-            loadingAnimation = this
-        }
+
+//        // Create rotation animation
+//        val rotation = ObjectAnimator.ofFloat(loadingLogo, View.ROTATION, 0f, 360f).apply {
+//            duration = 1500
+//            repeatCount = ObjectAnimator.INFINITE
+//            interpolator = LinearInterpolator()
+//        }
+//
+//        // Create pulse animation
+//        val scaleX = ObjectAnimator.ofFloat(loadingLogo, View.SCALE_X, 0.8f, 1.2f).apply {
+//            duration = 1000
+//            repeatCount = ObjectAnimator.INFINITE
+//            repeatMode = ObjectAnimator.REVERSE
+//            interpolator = AccelerateDecelerateInterpolator()
+//        }
+//
+//        val scaleY = ObjectAnimator.ofFloat(loadingLogo, View.SCALE_Y, 0.8f, 1.2f).apply {
+//            duration = 1000
+//            repeatCount = ObjectAnimator.INFINITE
+//            repeatMode = ObjectAnimator.REVERSE
+//            interpolator = AccelerateDecelerateInterpolator()
+//        }
+//
+//        // Create fade animation
+//        val alpha = ObjectAnimator.ofFloat(loadingLogo, View.ALPHA, 0.6f, 1f).apply {
+//            duration = 1000
+//            repeatCount = ObjectAnimator.INFINITE
+//            repeatMode = ObjectAnimator.REVERSE
+//            interpolator = AccelerateDecelerateInterpolator()
+//        }
+//
+//        AnimatorSet().apply {
+//            playTogether(rotation, scaleX, scaleY, alpha)
+//            start()
+//            loadingAnimation = this
+//        }
     }
 
     private fun stopLoadingAnimation() {

@@ -26,14 +26,24 @@ import com.lovoj.androidoffline.R
 import java.io.File
 import androidx.core.content.edit
 import android.content.Intent
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
+import androidx.leanback.widget.Visibility
+import com.bumptech.glide.Glide
 import com.lovoj.androidoffline.ProductSelectionActivity
+import org.json.JSONObject
+import java.net.URLEncoder
+import kotlin.math.log
 
 
 @RequiresApi(Build.VERSION_CODES.M)
 class OfflineWebview : AppCompatActivity() {
     private lateinit var webView: WebView
-    private lateinit var progressBar: ProgressBar
-    private lateinit var progressDialog: ProgressDialog
+    private lateinit var progressBar: ImageView
+
+    private lateinit var download_text: TextView
+    private lateinit var loaderLayout: LinearLayout
     private lateinit var backgroundProcessor: BackgroundProcessor
     private lateinit var resourceMonitor: ResourceMonitor
     private lateinit var contentManager: ContentManager
@@ -41,17 +51,24 @@ class OfflineWebview : AppCompatActivity() {
     private lateinit var webViewSetup: WebViewSetup
     private lateinit var memoryManagerIntegration: MemoryManagerIntegration
 
+
+    private var cache_Data = "http://localhost:8080/index.html#/cache-data?device=android&encoded="
+
+    private var apiDone = false;
     private val baseDir by lazy {
         File(filesDir, "offline_web").also { if (!it.exists()) it.mkdirs() }
     }
     private var localWebServer: LocalWebServer? = null
 
+    @RequiresApi(Build.VERSION_CODES.N)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_offline_web)
 
         webView = findViewById(R.id.webview)
+        download_text = findViewById<TextView>(R.id.download_text_per)
         progressBar = findViewById(R.id.loading_indicator)
+        loaderLayout = findViewById(R.id.loaderLayout)
 
         memoryManagerIntegration = MemoryManagerIntegration(this, baseDir)
 
@@ -74,9 +91,10 @@ class OfflineWebview : AppCompatActivity() {
         localWebServer?.start()
 
         webView.addJavascriptInterface(
-            BackgroundProcessorInterface(this),
+            WebAppInterface(this, download_text),
             "AndroidBackgroundProcessor"
         )
+
 
         memoryManagerIntegration.registerWebView("offline_webview", webView)
 
@@ -93,14 +111,25 @@ class OfflineWebview : AppCompatActivity() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
                 Log.d("OfflineWebview", "WebView onPageFinished: $url")
-                progressBar.visibility = View.GONE
+
+                if (url.toString().contains(cache_Data)) {
+                    download_text.text = "Configuring content..."
+                }
+
+
+//                progressBar.visibility = View.GONE
+//                loaderLayout.visibility = View.GONE
 
                 if (url != null) {
                     Log.d("OfflineWebview", "Page loaded successfully: $url")
                 }
-                val prefs = getSharedPreferences("offlineweb_prefs", android.content.Context.MODE_PRIVATE)
-                val apiDone = prefs.getBoolean("api_done", false)
-                view?.evaluateJavascript("window.apiDoneFromAndroid = ${if (apiDone) "true" else "false"};", null)
+                val prefs =
+                    getSharedPreferences("offlineweb_prefs", android.content.Context.MODE_PRIVATE)
+                apiDone = prefs.getBoolean("api_done", false)
+                view?.evaluateJavascript(
+                    "window.apiDoneFromAndroid = ${if (apiDone) "true" else "false"};",
+                    null
+                )
             }
 
             override fun onLoadResource(view: WebView?, url: String?) {
@@ -117,7 +146,10 @@ class OfflineWebview : AppCompatActivity() {
                 Log.d("OfflineWebview", "Received SSL Error : $request")
 
                 val errorMessage = "HTTP Error: ${errorResponse?.statusCode}"
-                memoryManagerIntegration.handleBackgroundCacheError(errorMessage, request?.url?.toString())
+                memoryManagerIntegration.handleBackgroundCacheError(
+                    errorMessage,
+                    request?.url?.toString()
+                )
             }
 
             override fun onReceivedError(
@@ -131,41 +163,62 @@ class OfflineWebview : AppCompatActivity() {
                     "WebView onReceivedError: ${request?.url}, error: ${error?.description}"
                 )
                 progressBar.visibility = View.GONE
+                loaderLayout.visibility = View.GONE
 
                 val errorMessage = "WebView Error: ${error?.description}"
-                memoryManagerIntegration.handleBackgroundCacheError(errorMessage, request?.url?.toString())
+                memoryManagerIntegration.handleBackgroundCacheError(
+                    errorMessage,
+                    request?.url?.toString()
+                )
             }
         }
 
         webViewSetup.setupWebView(webView, null)
 
-        progressDialog = ProgressDialog(this).apply {
-            setTitle("Preparing Content")
-            setMessage("Downloading files...")
-            setCancelable(false)
-        }
-        progressDialog.show()
-        contentManager.extractAndLoadContent(
-            onSuccess = {
-                progressDialog.dismiss()
-                loadContent()
-            },
-            onError = { errorMsg ->
-                progressDialog.dismiss()
-                val distIndex = File(baseDir, "dist/index.html")
-                if (!distIndex.exists()) {
-                    Toast.makeText(this, "No Internet and no local content found. Please connect to the internet once.", Toast.LENGTH_LONG).show()
-                } else {
-                    loadContent() // fallback: try to load whatever is there
+        Glide.with(this).asGif().load(R.drawable.overlay).into(progressBar)
+        if (!apiDone) {
+            progressBar.visibility = View.VISIBLE
+            contentManager.extractAndLoadContent(
+                onSuccess = {
+                    //progressBar.visibility = View.GONE
+                    //  loaderLayout.visibility = View.GONE
+                    loadContent()
+                },
+                onError = { errorMsg ->
+                    progressBar.visibility = View.GONE
+                    loaderLayout.visibility = View.GONE
+                    val distIndex = File(baseDir, "dist/index.html")
+                    if (!distIndex.exists()) {
+                        Toast.makeText(
+                            this,
+                            "No Internet and no local content found. Please connect to the internet once.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    } else {
+                        loadContent()
+                    }
+//                progressBar.visibility = View.GONE
+//                loaderLayout.visibility = View.GONE
+                    memoryManagerIntegration.handleBackgroundCacheError("Content loading error: $errorMsg")
+                },
+                onProgress = { progress ->
+                    download_text.text = "Downloading content: $progress%"
+                    if (progress.toString() == "100") {
+                        download_text.text = "Extracting content..."
+                    }
                 }
-                progressBar.visibility = View.GONE
-                memoryManagerIntegration.handleBackgroundCacheError("Content loading error: $errorMsg")
-            }
-        )
+
+            )
+        } else {
+            loadContent();
+        }
+
+
 
         Handler(mainLooper).postDelayed({
             if (progressBar.isVisible) {
-                progressBar.visibility = View.GONE
+//                progressBar.visibility = View.GONE
+//                loaderLayout.visibility = View.GONE
                 Log.e("OfflineWebview", "Loader timeout: forcibly hiding loader after 10 seconds.")
             }
         }, 10000)
@@ -206,10 +259,12 @@ class OfflineWebview : AppCompatActivity() {
                 "BACKGROUND_CACHE_ERROR" -> {
                     Log.w("OfflineWebview", "Background cache error: $errorMessage")
                 }
+
                 "MEMORY_CLEANUP_ERROR" -> {
                     Log.e("OfflineWebview", "Memory cleanup error: $errorMessage")
                     reloadContentIfNeeded()
                 }
+
                 else -> {
                     Log.e("OfflineWebview", "Unknown memory error [$errorType]: $errorMessage")
                 }
@@ -228,18 +283,43 @@ class OfflineWebview : AppCompatActivity() {
 
     private fun loadContent() {
         val prefs = getSharedPreferences("offlineweb_prefs", android.content.Context.MODE_PRIVATE)
+        val prefsToken = getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE)
         val apiDone = prefs.getBoolean("api_done", false)
+        val token = prefsToken.getString("token", null);
+        Log.d("TAG", "loadContent: Check Token " + token);
+        val json = JSONObject()
+        json.put("token", token)
+
+        val formattedJson = json.toString(4) // 4 = indentation level
+
+        val urlencodedtokn = URLEncoder.encode(formattedJson, "UTF-8")
+
+
         val intent = intent
         val fabricUrl = intent.getStringExtra("fabric_url")
         if (apiDone && fabricUrl == null) {
+            loaderLayout.visibility = View.GONE
+            progressBar.visibility = View.GONE
             val selectionIntent = Intent(this, ProductSelectionActivity::class.java)
             selectionIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(selectionIntent)
             finish()
             return
         }
-        val url = fabricUrl ?: "http://localhost:8080/"
-        Log.d("OfflineWebview","Starting WebView with url: $url")
+        val urlFabric = fabricUrl ?: "http://localhost:8080/"
+        var url = "http://localhost:8080/";
+
+        if (apiDone && fabricUrl != null) {
+            url = urlFabric
+            // Clear the download_text and hide the loader when loading a fabric URL
+            download_text.text = ""
+            loaderLayout.visibility = View.GONE
+        } else {
+            url = cache_Data + urlencodedtokn
+        }
+
+        Log.d("OfflineWebview", "Starting WebView with url: $url")
+
         webView.loadUrl(url)
     }
 
@@ -263,15 +343,21 @@ class OfflineWebview : AppCompatActivity() {
     }
 }
 
-class BackgroundProcessorInterface(private val activity: OfflineWebview) {
+class WebAppInterface(
+    private val activity: OfflineWebview,
+    private val statusTextView: TextView
+) {
     @JavascriptInterface
     fun onWebLoadingFinished(data: Boolean) {
-        val prefs = activity.getSharedPreferences("offlineweb_prefs", android.content.Context.MODE_PRIVATE)
+        val prefs =
+            activity.getSharedPreferences("offlineweb_prefs", android.content.Context.MODE_PRIVATE)
         if (data) {
             prefs.edit { putBoolean("api_done", true) }
             activity.runOnUiThread {
-                val selectionIntent = Intent(activity, com.lovoj.androidoffline.ProductSelectionActivity::class.java)
-                selectionIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+                val selectionIntent =
+                    Intent(activity, com.lovoj.androidoffline.ProductSelectionActivity::class.java)
+                selectionIntent.flags =
+                    Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
                 activity.startActivity(selectionIntent)
                 activity.finish()
             }
@@ -281,4 +367,10 @@ class BackgroundProcessorInterface(private val activity: OfflineWebview) {
             }
         }
     }
+
+    @JavascriptInterface
+    fun getProductCachePercentage(data: Int) {
+        statusTextView.text = "Configureing content ${data}%"
+    }
 }
+

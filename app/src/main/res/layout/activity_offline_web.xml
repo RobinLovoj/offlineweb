@@ -1,25 +1,45 @@
-<?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+<!-- res/layout/activity_main.xml -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="match_parent">
 
-
-
-    <WebView
+     <WebView
         android:id="@+id/webview"
-        android:padding="25dp"
-        android:paddingTop="15dp"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:scrollbars="vertical"
-        android:layout_centerInParent="true" />
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
-    <ProgressBar
-        android:id="@+id/loading_indicator"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:visibility="visible" />
 
-</RelativeLayout>
+     <LinearLayout
+         android:id="@+id/loaderLayout"
+         android:layout_width="match_parent"
+         android:layout_height="match_parent"
+         android:layout_gravity="center"
+         android:gravity="center"
+         android:orientation="vertical"
+         android:background="#fff">
+
+          <ImageView
+              android:id="@+id/loading_indicator"
+              android:layout_width="200dp"
+              android:layout_height="100dp"
+              android:visibility="visible"
+              android:layout_gravity="center"
+              android:layout_marginRight="10dp"
+              android:src="@drawable/loader"
+              android:scaleType="fitCenter" />
+
+
+          <TextView
+              android:id="@+id/download_text_per"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:text="Download in progress"
+              android:layout_gravity="center"
+              android:textStyle="bold"
+              android:textSize="24sp"
+              android:gravity="center"
+              android:textColor="#000">
+
+          </TextView>
+
+     </LinearLayout>
+ </FrameLayout>

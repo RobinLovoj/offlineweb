@@ -1,12 +1,15 @@
 package com.lovoj.androidoffline.Offlinewebview
 
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.annotation.RequiresApi
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.net.HttpURLConnection
 import java.net.URL
 import java.util.zip.ZipInputStream
 
@@ -15,7 +18,8 @@ class ContentManager(private val baseDir: File) {
     private val zipUrl = "https://d12hs8wunnl6k1.cloudfront.net/3dorder/dist.zip"
 
 
-    fun extractAndLoadContent(onSuccess: () -> Unit, onError: (String) -> Unit) {
+    @RequiresApi(Build.VERSION_CODES.N)
+    fun extractAndLoadContent(onSuccess: () -> Unit, onError: (String) -> Unit, onProgress: (Int) -> Unit) {
         val distIndexFile = File(baseDir, "dist/index.html")
         if (distIndexFile.exists()) {
             Log.d("ContentManager", "dist/index.html already exists, skipping extraction.")
@@ -31,7 +35,10 @@ class ContentManager(private val baseDir: File) {
                 baseDir.mkdirs()
                 val zipFile = File(baseDir, "temp.zip")
                 Log.d("ContentManager", "Downloading zip to: ${zipFile.absolutePath}")
-                downloadZipFile(zipUrl, zipFile)
+
+                downloadZipFileWithProgress(zipUrl, zipFile) { percent ->
+                    onProgress(percent);
+                 }
                 Log.d("ContentManager", "Download complete — zip size: ${zipFile.length()} bytes")
 
                 ZipInputStream(BufferedInputStream(FileInputStream(zipFile))).use { zipStream ->
@@ -84,6 +91,55 @@ class ContentManager(private val baseDir: File) {
             FileOutputStream(outputFile).use { output -> input.copyTo(output) }
         }
     }
+    @RequiresApi(Build.VERSION_CODES.N)
+    private fun downloadZipFileWithProgress(
+        urlString: String,
+        outputFile: File,
+        onProgress: (percent: Int) -> Unit
+    ) {
+        val url = URL(urlString)
+        val connection = url.openConnection() as HttpURLConnection
+        connection.instanceFollowRedirects = true
+        connection.connect()
+
+        val totalSize = connection.contentLengthLong
+        Log.d("Download", "Total file size: $totalSize bytes")
+
+        val input = BufferedInputStream(connection.inputStream)
+        val output = FileOutputStream(outputFile)
+
+        val buffer = ByteArray(8 * 1024)
+        var downloadedBytes: Long = 0
+        var bytesRead: Int
+        var lastProgress = 0
+
+        try {
+            while (input.read(buffer).also { bytesRead = it } != -1) {
+                output.write(buffer, 0, bytesRead)
+                downloadedBytes += bytesRead.toLong()
+
+                if (totalSize > 0) {
+                    val percent = ((downloadedBytes * 100) / totalSize).toInt()
+                    if (percent != lastProgress) {
+                        onProgress(percent)
+                        lastProgress = percent
+                    }
+                } else {
+                    onProgress(-1) // unknown size
+                }
+            }
+
+            if (totalSize > 0) onProgress(100)
+
+        } finally {
+            input.close()
+            output.close()
+            connection.disconnect()
+        }
+    }
+
+
+
 
     private fun patchAssetPaths(distIndex: File) {
         try {

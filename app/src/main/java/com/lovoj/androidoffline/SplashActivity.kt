@@ -64,21 +64,21 @@ class SplashActivity : AppCompatActivity() {
         }, "AndroidBackgroundProcessor")
         backgroundWebView.webViewClient = object : WebViewClient() {}
 
-        // Start ZIP extraction and load cache-data URL after extraction
-        val baseDir = File(filesDir, "offline_web")
-        val contentManager = com.lovoj.androidoffline.Offlinewebview.ContentManager(baseDir)
-        contentManager.extractAndLoadContent(
-            onSuccess = {
-                val url = "http://localhost:8080/index.html#/cache-data"
-                backgroundWebView.loadUrl(url)
-            },
-            onError = {
-                runOnUiThread {
-
-                    Toast.makeText(this, "Failed to prepare content", Toast.LENGTH_LONG).show()
-                }
-            }
-        )
+//        // Start ZIP extraction and load cache-data URL after extraction
+//        val baseDir = File(filesDir, "offline_web")
+//        val contentManager = com.lovoj.androidoffline.Offlinewebview.ContentManager(baseDir)
+//        contentManager.extractAndLoadContent(
+//            onSuccess = {
+//                val url = "http://localhost:8080/index.html#/cache-data"
+//                backgroundWebView.loadUrl(url)
+//            },
+//            onError = {
+//                runOnUiThread {
+//
+//                    Toast.makeText(this, "Failed to prepare content", Toast.LENGTH_LONG).show()
+//                }
+//            }
+//        )
 
         // Apply Lovoj app theme
         LovojAppTheme.applyTheme(this, LovojAppTheme.THEME_LOVOJ_APP_SPLASH)

@@ -33,8 +33,8 @@
 
                 <ImageView
                     android:id="@+id/logoImage"
-                    android:layout_width="180dp"
-                    android:layout_height="180dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_gravity="center_horizontal"
                     android:src="@drawable/spl" />
 
@@ -42,7 +42,7 @@
                     android:id="@+id/appTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="24dp"
+                    android:layout_marginTop="0dp"
                     android:fontFamily="sans-serif-medium"
                     android:text="Welcome Back"
                     android:textColor="@color/black"
@@ -60,6 +60,7 @@
                     android:layout_marginTop="32dp"
                     android:hint="Email"
                     app:boxBackgroundColor="@color/background_white"
+                    android:textColorHint="@color/grey_text"
                     app:errorEnabled="true"
                     app:error="@{viewModel.emailError}">
 
@@ -69,6 +70,7 @@
                         android:inputType="textEmailAddress"
                         android:text="@={viewModel.email}"
                         android:textColor="@color/black"
+                        android:textColorHint="@color/grey_text"
                         android:enabled="@{!viewModel.isLoading}" />
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -79,6 +81,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:hint="Password"
+                    android:textColorHint="@color/grey_text"
                     app:boxBackgroundColor="@color/background_white"
                     app:errorEnabled="true"
                     app:error="@{viewModel.passwordError}"
@@ -90,6 +93,7 @@
                         android:layout_height="wrap_content"
                         android:inputType="textPassword"
                         android:text="@={viewModel.password}"
+                        android:textColorHint="@color/grey_text"
                         android:textColor="@color/black"
                         android:enabled="@{!viewModel.isLoading}" />
                 </com.google.android.material.textfield.TextInputLayout>
@@ -145,7 +149,7 @@
                     android:id="@+id/loadingLogo"
                     android:layout_width="120dp"
                     android:layout_height="120dp"
-                    android:src="@drawable/spl" />
+                    android:src="@drawable/overlay" />
 
                 <TextView
                     android:layout_width="wrap_content"
