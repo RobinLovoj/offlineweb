@@ -198,10 +198,7 @@ class ProductAdapter(
         fun bind(product: Product) {
             imgProduct.setImageResource(product.imageRes)
             txtProductName.text = product.name
-
-            Log.d("TAG", "bind: Product Name ${product.name}")
-
-            txtProductName.visibility = View.VISIBLE // Ensure it's visible
+            txtProductName.visibility = View.VISIBLE
             itemView.setOnClickListener { onProductClick(product) }
         }
     }
