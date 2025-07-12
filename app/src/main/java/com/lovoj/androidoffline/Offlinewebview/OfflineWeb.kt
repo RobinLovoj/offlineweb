@@ -459,7 +459,13 @@ class OfflineWebview : AppCompatActivity() {
         setupPeriodicProtection()
 
         Glide.with(this).asGif().load(R.drawable.overlay).into(progressBar)
+        val distIndexFile = File(baseDir, "dist/index.html")
         if (!apiDone) {
+            if (distIndexFile.exists()) {
+                Toast.makeText(this, "Data coming from offline", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Data coming from the internet", Toast.LENGTH_SHORT).show()
+            }
             progressBar.visibility = View.VISIBLE
             contentManager.extractAndLoadContent(
                 onSuccess = {
@@ -489,6 +495,7 @@ class OfflineWebview : AppCompatActivity() {
 
             )
         } else {
+            Toast.makeText(this, "Data coming from offline", Toast.LENGTH_SHORT).show()
             loadContent()
         }
 
@@ -1327,6 +1334,28 @@ class WebAppInterface(
     @JavascriptInterface
     fun getProductCachePercentage(data: Int) {
         statusTextView.text = "Configuring content ${data}%"
+    }
+
+
+    @SuppressLint("SetTextI18n")
+    @JavascriptInterface
+    fun saveCustomizedProductData(data: String) {
+        try {
+            if (data.trim().startsWith("[")) {
+                // It's a JSON array
+                val jsonArray = org.json.JSONArray(data)
+                for (i in 0 until jsonArray.length()) {
+                    val obj = jsonArray.getJSONObject(i)
+                    Log.d("OfflineWebview", "saveCustomizedProductData (array item): $obj")
+                }
+            } else {
+                // It's a single JSON object
+                val jsonObj = org.json.JSONObject(data)
+                Log.d("OfflineWebview", "saveCustomizedProductData (object): $jsonObj")
+            }
+        } catch (e: Exception) {
+            Log.e("OfflineWebview", "Error parsing saveCustomizedProductData: $data", e)
+        }
     }
 }
 

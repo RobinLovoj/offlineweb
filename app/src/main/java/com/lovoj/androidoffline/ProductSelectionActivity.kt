@@ -41,6 +41,27 @@ class ProductSelectionActivity : AppCompatActivity() {
     private val PREFS_NAME = "product_prefs"
     private val KEY_PRODUCT_LIST = "makingProductList"
 
+    // Add static lists at the top of the class
+    private val menCategories = listOf(
+        Product("Shirt", R.drawable.men_shirt, "Men"),
+        Product("Bandhgala\nSuit", R.drawable.bandhgala_suit, "Men"),
+        Product("Suits", R.drawable.suit, "Men"),
+        Product("Half\nJacket", R.drawable.half_jacket, "Men"),
+        Product("Trench\nCoat", R.drawable.overcoat, "Men"),
+        Product("Abayas", R.drawable.men_abayas, "Men")
+    )
+    private val womenCategories = listOf(
+        Product("Kurti", R.drawable.kurta, "Women"),
+        Product("Trench\nCoat", R.drawable.overcoat, "Women"),
+        Product("Suits", R.drawable.suit, "Women"),
+        Product("Shirt", R.drawable.men_shirt, "Women"),
+        Product("One Piece\nDress", R.drawable.one_piece, "Women"),
+        Product("Abayas", R.drawable.women_abayas, "Women"),
+        Product("Skirt", R.drawable.women_skirt, "Women")
+    )
+    private var filteredMenCategories: List<Product> = emptyList()
+    private var filteredWomenCategories: List<Product> = emptyList()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_product_selection)
@@ -77,13 +98,13 @@ class ProductSelectionActivity : AppCompatActivity() {
         if (cached != null) {
             loader.visibility = View.GONE
             val list = JSONArray(cached)
-            val products = mutableListOf<Product>()
+            val apiProductNames = mutableListOf<String>()
             for (i in 0 until list.length()) {
-                val name = list.getString(i)
-                products.add(Product(name, getProductImageRes(name), getProductCategory(name)))
+                apiProductNames.add(list.getString(i).trim())
             }
-            allProducts = products
-            adapter.updateProducts(allProducts.filter { it.category == getCurrentTabCategory() })
+            filteredMenCategories = menCategories.filter { apiProductNames.contains(it.name) }
+            filteredWomenCategories = womenCategories.filter { apiProductNames.contains(it.name) }
+            setActiveTab(currentTab)
         } else {
             loader.visibility = View.VISIBLE
             val token = getSharedPreferences("app_prefs", Context.MODE_PRIVATE).getString("token", null)
@@ -97,13 +118,12 @@ class ProductSelectionActivity : AppCompatActivity() {
             ApiUtils.fetchMakingProductList(this, token, { productList ->
                 android.util.Log.d("ProductSelection", "API call successful. Products: ${productList.size}")
                 prefs.edit().putString(KEY_PRODUCT_LIST, JSONArray(productList).toString()).apply()
+                val apiProductNames = productList.map { it.trim() }
+                filteredMenCategories = menCategories.filter { apiProductNames.contains(it.name) }
+                filteredWomenCategories = womenCategories.filter { apiProductNames.contains(it.name) }
                 runOnUiThread {
                     loader.visibility = View.GONE
-                    val products = productList.map { name ->
-                        Product(name, getProductImageRes(name), getProductCategory(name))
-                    }
-                    allProducts = products
-                    adapter.updateProducts(allProducts.filter { it.category == getCurrentTabCategory() })
+                    setActiveTab(currentTab)
                 }
             }, { error ->
                 android.util.Log.e("ProductSelection", "API call failed: $error")
@@ -131,7 +151,11 @@ class ProductSelectionActivity : AppCompatActivity() {
             "Women" -> applyRoundedButtonStyle(btnWomen, selectedColor, selectedTextColor)
         }
 
-        adapter.updateProducts(allProducts.filter { it.category == category })
+        // Show only filtered categories for the selected tab
+        when (category) {
+            "Men" -> adapter.updateProducts(filteredMenCategories)
+            "Women" -> adapter.updateProducts(filteredWomenCategories)
+        }
     }
 
     private fun getCurrentTabCategory(): String = currentTab
