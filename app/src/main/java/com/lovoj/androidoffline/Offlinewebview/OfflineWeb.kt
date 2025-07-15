@@ -441,31 +441,25 @@ class OfflineWebview : AppCompatActivity() {
             override fun onConsoleMessage(message: ConsoleMessage): Boolean {
                 val messageText = message.message()
                 Log.d("WebView Console", "[${message.messageLevel()}] $messageText")
-                
+
                 // Handle texture errors specifically
                 if (messageText.contains("Error applying texture:")) {
                     Log.w("TextureError", "Detected texture error: $messageText")
                     handleTextureErrorInKotlin(messageText)
                 }
-                
+
                 return true
             }
         }
 
         // Inject immediate error protection
         injectImmediateErrorProtection()
-        
+
         // Set up periodic protection injection
         setupPeriodicProtection()
 
         Glide.with(this).asGif().load(R.drawable.overlay).into(progressBar)
-        val distIndexFile = File(baseDir, "dist/index.html")
         if (!apiDone) {
-            if (distIndexFile.exists()) {
-                Toast.makeText(this, "Data coming from offline", Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(this, "Data coming from the internet", Toast.LENGTH_SHORT).show()
-            }
             progressBar.visibility = View.VISIBLE
             contentManager.extractAndLoadContent(
                 onSuccess = {
@@ -495,7 +489,6 @@ class OfflineWebview : AppCompatActivity() {
 
             )
         } else {
-            Toast.makeText(this, "Data coming from offline", Toast.LENGTH_SHORT).show()
             loadContent()
         }
 
@@ -595,7 +588,7 @@ class OfflineWebview : AppCompatActivity() {
 
         if (apiDone && fabricUrl != null) {
             url = urlFabric
-             download_text.text = ""
+            download_text.text = ""
             loaderLayout.visibility = View.GONE
         } else {
             url = cache_Data + urlencodedtokn
@@ -627,7 +620,7 @@ class OfflineWebview : AppCompatActivity() {
 
     private fun handleTextureErrorInKotlin(errorMessage: String) {
         Log.w("OfflineWebview", "Handling texture error in Kotlin: $errorMessage")
-        
+
         // First, try to get more information about the error
         webView.evaluateJavascript("""
             (function() {
@@ -650,7 +643,7 @@ class OfflineWebview : AppCompatActivity() {
         """.trimIndent()) { result ->
             Log.d("OfflineWebview", "Scene state logged: $result")
         }
-        
+
         // Inject immediate recovery code with better error handling
         webView.evaluateJavascript("""
             (function() {
@@ -744,7 +737,7 @@ class OfflineWebview : AppCompatActivity() {
         """.trimIndent()) { result ->
             Log.d("OfflineWebview", "Recovery code executed: $result")
         }
-        
+
         // Also try to prevent future errors by overriding the problematic function
         webView.evaluateJavascript("""
             (function() {
@@ -1311,6 +1304,7 @@ class WebAppInterface(
 ) {
     @JavascriptInterface
     fun onWebLoadingFinished(data: Boolean) {
+        Log.d("WebAppInterface", "Callback received: onWebLoadingFinished($data)")
         val prefs =
             activity.getSharedPreferences("offlineweb_prefs", android.content.Context.MODE_PRIVATE)
         if (data) {
@@ -1333,39 +1327,19 @@ class WebAppInterface(
     @SuppressLint("SetTextI18n")
     @JavascriptInterface
     fun getProductCachePercentage(data: Int) {
-        statusTextView.text = "Configuring content ${data}%"
-    }
-
-
-    @SuppressLint("SetTextI18n")
-    @JavascriptInterface
-    fun saveCustomizedProductData(data: String) {
-        try {
-            if (data.trim().startsWith("[")) {
-                // It's a JSON array
-                val jsonArray = org.json.JSONArray(data)
-                for (i in 0 until jsonArray.length()) {
-                    val obj = jsonArray.getJSONObject(i)
-                    Log.d("OfflineWebview", "saveCustomizedProductData (array item): $obj")
-                }
-            } else {
-                // It's a single JSON object
-                val jsonObj = org.json.JSONObject(data)
-                Log.d("OfflineWebview", "saveCustomizedProductData (object): $jsonObj")
-            }
-        } catch (e: Exception) {
-            Log.e("OfflineWebview", "Error parsing saveCustomizedProductData: $data", e)
-        }
+        Log.d("WebAppInterface", "Callback received: getProductCachePercentage($data)")
+        statusTextView.text = "Configuring content  ${data}%"
     }
 }
 
 class TextureErrorHandler(private val activity: OfflineWebview) {
-    
+
     @RequiresApi(Build.VERSION_CODES.M)
     @JavascriptInterface
     fun handleTextureError(errorMessage: String, textureUrl: String?) {
+        Log.d("TextureErrorHandler", "Callback received: handleTextureError($errorMessage, $textureUrl)")
         Log.w("TextureErrorHandler", "Texture error: $errorMessage for URL: $textureUrl")
-        
+
         activity.runOnUiThread {
             activity.webView.evaluateJavascript("""
                 (function() {
@@ -1398,22 +1372,25 @@ class TextureErrorHandler(private val activity: OfflineWebview) {
             """.trimIndent(), null)
         }
     }
-    
+
     @JavascriptInterface
     fun onRecoverySuccess() {
+        Log.d("TextureErrorHandler", "Callback received: onRecoverySuccess()")
         Log.d("TextureErrorHandler", "Texture recovery successful")
     }
-    
+
     @JavascriptInterface
     fun onRecoveryFailed(error: String) {
+        Log.d("TextureErrorHandler", "Callback received: onRecoveryFailed($error)")
         Log.e("TextureErrorHandler", "Texture recovery failed: $error")
     }
-    
+
     @RequiresApi(Build.VERSION_CODES.M)
     @JavascriptInterface
     fun createFallbackTexture() {
+        Log.d("TextureErrorHandler", "Callback received: createFallbackTexture()")
         Log.d("TextureErrorHandler", "Creating fallback texture")
-        
+
         activity.runOnUiThread {
             activity.webView.evaluateJavascript("""
                 (function() {
@@ -1460,5 +1437,18 @@ class TextureErrorHandler(private val activity: OfflineWebview) {
             """.trimIndent(), null)
         }
     }
-}
 
+    @JavascriptInterface
+    fun onSceneReady() {
+        Log.d("TextureErrorHandler", "Callback received: onSceneReady()")
+        val fabricUrl = activity.intent.getStringExtra("fabric_url")
+        if (fabricUrl != null) {
+            activity.runOnUiThread {
+                activity.webView.evaluateJavascript(
+                    "if(window.applyFabricTexture){window.applyFabricTexture({fabImage: '" + fabricUrl + "'});}",
+                    null
+                )
+            }
+        }
+    }
+}
