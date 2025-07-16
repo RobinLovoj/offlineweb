@@ -39,6 +39,22 @@ import kotlinx.coroutines.withContext
 import androidx.room.Room
 import com.lovoj.androidoffline.Offlinewebview.AppDatabase
 import com.lovoj.androidoffline.Offlinewebview.ProductEntity
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
+import android.content.Context
+import android.animation.ArgbEvaluator
+import android.animation.ValueAnimator
+import android.graphics.drawable.ColorDrawable
+import android.view.animation.OvershootInterpolator
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import android.animation.ObjectAnimator
+import android.animation.PropertyValuesHolder
+import android.animation.AnimatorSet
+import android.view.animation.CycleInterpolator
+import android.animation.Keyframe
 
 
 @RequiresApi(Build.VERSION_CODES.M)
@@ -54,6 +70,15 @@ class OfflineWebview : AppCompatActivity() {
     private lateinit var apiHelper: ApiHelper
     private lateinit var webViewSetup: WebViewSetup
     private lateinit var memoryManagerIntegration: MemoryManagerIntegration
+    private lateinit var connectivityManager: ConnectivityManager
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
+
+    private lateinit var indicatorText: TextView
+    private lateinit var indicatorIcon: ImageView
+    private lateinit var indicatorLayout: LinearLayout
+
+    private var indicatorJob: Job? = null
+    private var indicatorAnimator: ObjectAnimator? = null
 
 
     private var cache_Data = "http://localhost:8080/index.html#/cache-data?device=android&encoded="
@@ -74,6 +99,13 @@ class OfflineWebview : AppCompatActivity() {
         download_text = findViewById(R.id.download_text_per)
         progressBar = findViewById(R.id.loading_indicator)
         loaderLayout = findViewById(R.id.loaderLayout)
+        indicatorText = findViewById(R.id.indicatorText)
+        indicatorIcon = findViewById(R.id.indicatorIcon)
+        indicatorLayout = findViewById(R.id.connectionIndicator)
+        connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        registerNetworkCallback()
+        startIndicatorPolling()
+        updateConnectionIndicator(isInternetAvailable())
 
         memoryManagerIntegration = MemoryManagerIntegration(this, baseDir)
 
@@ -623,6 +655,9 @@ class OfflineWebview : AppCompatActivity() {
 
         memoryManagerIntegration.unregisterWebView("offline_webview")
         memoryManagerIntegration.cleanup()
+        unregisterNetworkCallback()
+        indicatorJob?.cancel()
+        stopContinuousPinchAnimation()
     }
 
 
@@ -1319,6 +1354,120 @@ class OfflineWebview : AppCompatActivity() {
         """.trimIndent()
         ) { result ->
             Log.d("OfflineWebview", "Ultra-aggressive error prevention injected: $result")
+        }
+    }
+
+    private fun registerNetworkCallback() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            val request = NetworkRequest.Builder()
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+                .build()
+            networkCallback = object : ConnectivityManager.NetworkCallback() {
+                override fun onAvailable(network: Network) {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val hasInternet = isInternetAvailable()
+                        withContext(Dispatchers.Main) {
+                            updateConnectionIndicator(hasInternet)
+                        }
+                    }
+                }
+                override fun onLost(network: Network) {
+                    runOnUiThread { updateConnectionIndicator(false) }
+                }
+            }
+            connectivityManager.registerNetworkCallback(request, networkCallback!!)
+        }
+    }
+
+    private fun unregisterNetworkCallback() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && networkCallback != null) {
+            connectivityManager.unregisterNetworkCallback(networkCallback!!)
+        }
+    }
+
+    private fun startIndicatorPolling() {
+        indicatorJob?.cancel()
+        indicatorJob = CoroutineScope(Dispatchers.IO).launch {
+            var lastState: Boolean? = null
+            while (true) {
+                val hasInternet = isInternetAvailable()
+                if (lastState == null || lastState != hasInternet) {
+                    withContext(Dispatchers.Main) {
+                        updateConnectionIndicator(hasInternet)
+                    }
+                    lastState = hasInternet
+                }
+                delay(2000)
+            }
+        }
+    }
+
+    private fun startContinuousPinchAnimation(isOnline: Boolean) {
+        indicatorAnimator?.cancel()
+        val scaleX = PropertyValuesHolder.ofKeyframe(View.SCALE_X,
+            Keyframe.ofFloat(0f, 1f),
+            Keyframe.ofFloat(0.33f, if (isOnline) 0.8f else 1.12f),
+            Keyframe.ofFloat(0.66f, if (isOnline) 1.12f else 0.8f),
+            Keyframe.ofFloat(1f, 1f)
+        )
+        val scaleY = PropertyValuesHolder.ofKeyframe(View.SCALE_Y,
+            Keyframe.ofFloat(0f, 1f),
+            Keyframe.ofFloat(0.33f, if (isOnline) 0.8f else 1.12f),
+            Keyframe.ofFloat(0.66f, if (isOnline) 1.12f else 0.8f),
+            Keyframe.ofFloat(1f, 1f)
+        )
+        indicatorAnimator = ObjectAnimator.ofPropertyValuesHolder(indicatorLayout, scaleX, scaleY).apply {
+            duration = 900
+            repeatCount = ValueAnimator.INFINITE
+            repeatMode = ValueAnimator.RESTART
+            start()
+        }
+    }
+    private fun stopContinuousPinchAnimation() {
+        indicatorAnimator?.cancel()
+        indicatorLayout.scaleX = 1f
+        indicatorLayout.scaleY = 1f
+    }
+
+    private fun updateConnectionIndicator(isOnline: Boolean) {
+        indicatorLayout.setBackgroundResource(
+            if (isOnline) R.drawable.indicator_online_bg else R.drawable.indicator_offline_bg
+        )
+
+        val onlineColor = android.graphics.Color.parseColor("#009900") // Material green
+        val offlineColor = android.graphics.Color.parseColor("#D32F2F") // Material red
+        val fromColor = (indicatorText.currentTextColor)
+        val toColor = if (isOnline) onlineColor else offlineColor
+
+        ValueAnimator.ofArgb(fromColor, toColor).apply {
+            duration = 300
+            addUpdateListener { animator ->
+                indicatorText.setTextColor(animator.animatedValue as Int)
+                indicatorIcon.setColorFilter(animator.animatedValue as Int)
+            }
+            start()
+        }
+
+        startContinuousPinchAnimation(isOnline)
+
+     //   indicatorIcon.setImageResource(if (isOnline) R.drawable.ic_check else R.drawable.ic_block)
+
+        indicatorText.animate().alpha(0f).setDuration(100).withEndAction {
+            indicatorText.text = if (isOnline) "ONLINE 😃" else "OFFLINE 🤩"
+            indicatorText.animate().alpha(1f).setDuration(200).start()
+        }.start()
+
+        Toast.makeText(this, if (isOnline) "You are ONLINE" else "You are OFFLINE", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun isInternetAvailable(): Boolean {
+        return try {
+            val command = "ping -c 1 8.8.8.8"
+            val process = Runtime.getRuntime().exec(command)
+            val returnVal = process.waitFor()
+            returnVal == 0
+        } catch (e: Exception) {
+            false
         }
     }
 }

@@ -42,4 +42,46 @@
           </TextView>
 
      </LinearLayout>
+
+<FrameLayout
+    android:id="@+id/connectionIndicatorContainer"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+     android:layout_marginStart="50dp"
+     >
+
+    <LinearLayout
+        android:id="@+id/connectionIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="30dp"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingStart="28dp"
+        android:paddingEnd="18dp"
+        android:background="@drawable/indicator_online_bg"
+        android:elevation="0dp"
+        android:animateLayoutChanges="true">
+
+        <TextView
+            android:id="@+id/indicatorText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="LOADED ONLINE 😃"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="#00FF00"
+            android:fontFamily="monospace"
+            android:letterSpacing="0.1"
+            android:layout_marginEnd="8dp"
+            android:singleLine="true"
+            android:maxLines="1"
+            android:ellipsize="end"/>
+
+        <ImageView
+            android:id="@+id/indicatorIcon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:tint="#00FF00"/>
+    </LinearLayout>
+</FrameLayout>
  </FrameLayout>
