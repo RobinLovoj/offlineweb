@@ -32,6 +32,13 @@ import org.json.JSONObject
 import java.net.URLEncoder
 import android.webkit.WebChromeClient
 import android.webkit.ConsoleMessage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import androidx.room.Room
+import com.lovoj.androidoffline.Offlinewebview.AppDatabase
+import com.lovoj.androidoffline.Offlinewebview.ProductEntity
 
 
 @RequiresApi(Build.VERSION_CODES.M)
@@ -99,6 +106,12 @@ class OfflineWebview : AppCompatActivity() {
             "AndroidTextureHandler"
         )
 
+        // Add custom interface for saving customized product data
+        webView.addJavascriptInterface(
+            SaveCustomizedProductInterface(),
+            "AndroidSaveProduct"
+        )
+
         memoryManagerIntegration.registerWebView("offline_webview", webView)
 
         webView.webViewClient = object : WebViewClient() {
@@ -137,7 +150,8 @@ class OfflineWebview : AppCompatActivity() {
             }
 
             private fun injectTextureErrorHandler(webView: WebView?) {
-                webView?.evaluateJavascript("""
+                webView?.evaluateJavascript(
+                    """
                     (function() {
                         // Override console.error to catch texture errors
                         const originalError = console.error;
@@ -203,11 +217,13 @@ class OfflineWebview : AppCompatActivity() {
                         
                         console.log('Texture error handler injected');
                     })();
-                """.trimIndent(), null)
+                """.trimIndent(), null
+                )
             }
 
             private fun injectProactiveTextureProtection(webView: WebView?) {
-                webView?.evaluateJavascript("""
+                webView?.evaluateJavascript(
+                    """
                     (function() {
                         // Proactive texture protection
                         console.log('Injecting proactive texture protection...');
@@ -387,7 +403,8 @@ class OfflineWebview : AppCompatActivity() {
                         
                         console.log('Proactive texture protection injected');
                     })();
-                """.trimIndent(), null)
+                """.trimIndent(), null
+                )
             }
 
             override fun onLoadResource(view: WebView?, url: String?) {
@@ -621,8 +638,8 @@ class OfflineWebview : AppCompatActivity() {
     private fun handleTextureErrorInKotlin(errorMessage: String) {
         Log.w("OfflineWebview", "Handling texture error in Kotlin: $errorMessage")
 
-        // First, try to get more information about the error
-        webView.evaluateJavascript("""
+        webView.evaluateJavascript(
+            """
             (function() {
                 console.log('Kotlin: Starting texture error recovery...');
                 console.log('Kotlin: Current scene state:', !!window.scene);
@@ -640,12 +657,13 @@ class OfflineWebview : AppCompatActivity() {
                     console.log('Kotlin: Current textures in scene:', textureCount);
                 }
             })();
-        """.trimIndent()) { result ->
+        """.trimIndent()
+        ) { result ->
             Log.d("OfflineWebview", "Scene state logged: $result")
         }
 
-        // Inject immediate recovery code with better error handling
-        webView.evaluateJavascript("""
+        webView.evaluateJavascript(
+            """
             (function() {
                 try {
                     console.log('Kotlin: Attempting texture error recovery...');
@@ -734,12 +752,14 @@ class OfflineWebview : AppCompatActivity() {
                     }
                 }
             })();
-        """.trimIndent()) { result ->
+        """.trimIndent()
+        ) { result ->
             Log.d("OfflineWebview", "Recovery code executed: $result")
         }
 
         // Also try to prevent future errors by overriding the problematic function
-        webView.evaluateJavascript("""
+        webView.evaluateJavascript(
+            """
             (function() {
                 try {
                     // Override the specific function that's causing the error
@@ -776,13 +796,15 @@ class OfflineWebview : AppCompatActivity() {
                     console.error('Kotlin: Function override failed:', e);
                 }
             })();
-        """.trimIndent()) { result ->
+        """.trimIndent()
+        ) { result ->
             Log.d("OfflineWebview", "Function override executed: $result")
         }
     }
 
     private fun injectImmediateErrorProtection() {
-        webView.evaluateJavascript("""
+        webView.evaluateJavascript(
+            """
             (function() {
                 console.log('Injecting COMPLETE error suppression system...');
                 
@@ -1070,7 +1092,8 @@ class OfflineWebview : AppCompatActivity() {
                 }, 100);
                 
             })();
-        """.trimIndent()) { result ->
+        """.trimIndent()
+        ) { result ->
             Log.d("OfflineWebview", "Complete error suppression system injected: $result")
         }
     }
@@ -1083,7 +1106,8 @@ class OfflineWebview : AppCompatActivity() {
     }
 
     private fun injectUltraAggressiveErrorPrevention() {
-        webView.evaluateJavascript("""
+        webView.evaluateJavascript(
+            """
             (function() {
                 console.log('ULTRA-AGGRESSIVE: Installing complete error prevention system...');
                 
@@ -1292,7 +1316,8 @@ class OfflineWebview : AppCompatActivity() {
                 }, 50);
                 
             })();
-        """.trimIndent()) { result ->
+        """.trimIndent()
+        ) { result ->
             Log.d("OfflineWebview", "Ultra-aggressive error prevention injected: $result")
         }
     }
@@ -1302,6 +1327,13 @@ class WebAppInterface(
     private val activity: OfflineWebview,
     private val statusTextView: TextView
 ) {
+    private val db by lazy {
+        Room.databaseBuilder(
+            activity.applicationContext,
+            AppDatabase::class.java, "my-database"
+        ).build()
+    }
+
     @JavascriptInterface
     fun onWebLoadingFinished(data: Boolean) {
         Log.d("WebAppInterface", "Callback received: onWebLoadingFinished($data)")
@@ -1330,6 +1362,36 @@ class WebAppInterface(
         Log.d("WebAppInterface", "Callback received: getProductCachePercentage($data)")
         statusTextView.text = "Configuring content  ${data}%"
     }
+
+    @JavascriptInterface
+    fun saveCustomizedProductData(jsonArray: String?) {
+        if (jsonArray.isNullOrBlank() || jsonArray == "undefined" || jsonArray == "null") {
+            Log.w("WebAppInterface", "saveCustomizedProductData called with invalid input: $jsonArray")
+            return
+        }
+        Log.d("WebAppInterface", "saveCustomizedProductData called with: $jsonArray")
+        try {
+            val jsonArr = org.json.JSONArray(jsonArray)
+            val productList = mutableListOf<ProductEntity>()
+            for (i in 0 until jsonArr.length()) {
+                val obj = jsonArr.getJSONObject(i)
+                productList.add(ProductEntity(json = obj.toString()))
+            }
+            CoroutineScope(Dispatchers.IO).launch {
+                db.productDao().insertAll(productList)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(activity, "Data saved locally!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(activity, "Your data has been saved offline. It will auto-sync when internet is available.", Toast.LENGTH_LONG).show()
+                    val intent = Intent(activity, com.lovoj.androidoffline.ProductSelectionActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+                    activity.startActivity(intent)
+                    activity.finish()
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("WebAppInterface", "Failed to parse product data: $e")
+        }
+    }
 }
 
 class TextureErrorHandler(private val activity: OfflineWebview) {
@@ -1337,11 +1399,15 @@ class TextureErrorHandler(private val activity: OfflineWebview) {
     @RequiresApi(Build.VERSION_CODES.M)
     @JavascriptInterface
     fun handleTextureError(errorMessage: String, textureUrl: String?) {
-        Log.d("TextureErrorHandler", "Callback received: handleTextureError($errorMessage, $textureUrl)")
+        Log.d(
+            "TextureErrorHandler",
+            "Callback received: handleTextureError($errorMessage, $textureUrl)"
+        )
         Log.w("TextureErrorHandler", "Texture error: $errorMessage for URL: $textureUrl")
 
         activity.runOnUiThread {
-            activity.webView.evaluateJavascript("""
+            activity.webView.evaluateJavascript(
+                """
                 (function() {
                     try {
                         if (window.THREE && window.THREE.Cache) {
@@ -1369,7 +1435,8 @@ class TextureErrorHandler(private val activity: OfflineWebview) {
                         }
                     }
                 })();
-            """.trimIndent(), null)
+            """.trimIndent(), null
+            )
         }
     }
 
@@ -1392,7 +1459,8 @@ class TextureErrorHandler(private val activity: OfflineWebview) {
         Log.d("TextureErrorHandler", "Creating fallback texture")
 
         activity.runOnUiThread {
-            activity.webView.evaluateJavascript("""
+            activity.webView.evaluateJavascript(
+                """
                 (function() {
                     try {
                         if (window.THREE) {
@@ -1434,10 +1502,12 @@ class TextureErrorHandler(private val activity: OfflineWebview) {
                         console.error('Failed to create fallback texture:', e);
                     }
                 })();
-            """.trimIndent(), null)
+            """.trimIndent(), null
+            )
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.M)
     @JavascriptInterface
     fun onSceneReady() {
         Log.d("TextureErrorHandler", "Callback received: onSceneReady()")
@@ -1449,6 +1519,30 @@ class TextureErrorHandler(private val activity: OfflineWebview) {
                     null
                 )
             }
+        }
+    }
+}
+
+class SaveCustomizedProductInterface {
+    @JavascriptInterface
+    fun saveCustomizedProductData(jsonArray: String?) {
+        if (jsonArray.isNullOrBlank() || jsonArray == "undefined" || jsonArray == "null") {
+            Log.w(
+                "SaveCustomizedProduct",
+                "saveCustomizedProductData called with invalid input: $jsonArray"
+            )
+            return
+        }
+        try {
+            Log.d("SaveCustomizedProduct", "Received JSON: $jsonArray")
+            // Parse and print the array of objects
+            val jsonArr = org.json.JSONArray(jsonArray)
+            for (i in 0 until jsonArr.length()) {
+                val obj = jsonArr.getJSONObject(i)
+                Log.d("SaveCustomizedProduct", "Object $i: $obj")
+            }
+        } catch (e: Exception) {
+            Log.e("SaveCustomizedProduct", "Error parsing JSON: ${e.message}")
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.lovoj.androidoffline.Offlinewebview
 
+import android.content.Context
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -12,6 +13,7 @@ import java.io.FileOutputStream
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.zip.ZipInputStream
+
 
 
 class ContentManager(private val baseDir: File) {
@@ -63,7 +65,10 @@ class ContentManager(private val baseDir: File) {
                                     output.write(buffer, 0, len)
                                 }
                             }
-                            Log.d("ContentManager", "Extracted file: ${outputFile.absolutePath}")
+                             Log.d("ContentManager", "Extracted file: ${outputFile.absolutePath}")
+                            if (entryName.endsWith(".glb")) {
+                                Log.d("ContentManager", "GLB Extracted: ${outputFile.absolutePath}")
+                            }
                         }
                         zipStream.closeEntry()
                         entry = zipStream.nextEntry

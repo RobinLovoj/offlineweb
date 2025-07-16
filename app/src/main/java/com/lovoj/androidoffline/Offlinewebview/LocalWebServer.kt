@@ -2,6 +2,7 @@ package com.lovoj.androidoffline.Offlinewebview
 
 import fi.iki.elonen.NanoHTTPD
 import java.io.File
+import android.util.Log
 
 class LocalWebServer(
     private val rootDir: File,
@@ -27,12 +28,16 @@ class LocalWebServer(
                 targetFile = File(targetFile, "index.html")
             }
 
+            // Debug logs for file serving
+            Log.d("LocalWebServer", "Requested URI: $uri")
+            Log.d("LocalWebServer", "Looking for file: ${targetFile.absolutePath}, exists: ${targetFile.exists()}")
+
             if (!targetFile.exists()) {
-                if (!uri.contains(".") || uri.endsWith(".html")) {
-                    targetFile = File(rootDir, "/index.html")
-                } else {
-                    return newFixedLengthResponse(Response.Status.NOT_FOUND, "text/plain", "404 Not Found")
+                Log.e("LocalWebServer", "File not found: ${targetFile.absolutePath}")
+                if (uri.endsWith(".glb")) {
+                    return newFixedLengthResponse(Response.Status.NOT_FOUND, "text/plain", "GLB model not found at: ${targetFile.absolutePath}")
                 }
+                return newFixedLengthResponse(Response.Status.NOT_FOUND, "text/plain", "404 Not Found")
             }
 
             val mime = getMimeTypeForFile(targetFile.name)

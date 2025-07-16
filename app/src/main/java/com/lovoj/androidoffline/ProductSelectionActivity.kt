@@ -21,6 +21,9 @@ import android.widget.Toast
 import android.content.Context
 import android.util.Log
 import kotlin.math.log
+import android.content.res.Configuration
+import android.graphics.Color
+import com.google.android.material.button.MaterialButton
 
 // Product data class
 data class Product(
@@ -32,9 +35,8 @@ data class Product(
 
 class ProductSelectionActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
-    private lateinit var btnMen: Button
-    private lateinit var btnWomen: Button
-    private lateinit var loader: View
+    private lateinit var btnMen: MaterialButton
+    private lateinit var btnWomen: MaterialButton
     private lateinit var adapter: ProductAdapter
     private var allProducts: List<Product> = emptyList() // Initialize as empty
 
@@ -70,13 +72,10 @@ class ProductSelectionActivity : AppCompatActivity() {
         recyclerView = findViewById(R.id.recyclerProducts)
         btnMen = findViewById(R.id.btnMen)
         btnWomen = findViewById(R.id.btnWomen)
-        loader = findViewById(R.id.loader)
-        loader.visibility = View.VISIBLE // Show loader immediately
 
-        recyclerView.layoutManager = GridLayoutManager(this, 4)
-
-        // All products
-        // Removed static allProducts assignment. Product list is now loaded only via loadOrFetchProductList().
+        // Always use 3 columns for the product grid
+        val spanCount = 3
+        recyclerView.layoutManager = GridLayoutManager(this, spanCount)
 
         adapter = ProductAdapter(emptyList()) { product ->
             openFabricForm(product.name)
@@ -84,19 +83,46 @@ class ProductSelectionActivity : AppCompatActivity() {
         recyclerView.adapter = adapter
 
         // Set click listeners
-        btnMen.setOnClickListener { setActiveTab("Men") }
-        btnWomen.setOnClickListener { setActiveTab("Women") }
+        btnMen.isChecked = true
+        btnWomen.isChecked = false
+
+        btnMen.setOnClickListener {
+            btnMen.isChecked = true
+            btnWomen.isChecked = false
+            setActiveTab("Men")
+            btnWomen.setBackgroundColor(Color.parseColor("#FFFFFF"))
+            btnMen.setBackgroundColor(Color.parseColor("#f603d0"))
+
+
+        }
+
+        btnWomen.setOnClickListener {
+            btnMen.isChecked = false
+            btnWomen.isChecked = true
+            btnWomen.setBackgroundColor(Color.parseColor("#f603d0"))
+            btnMen.setBackgroundColor(Color.parseColor("#FFFFFF"))
+            setActiveTab("Women")
+        }
         setActiveTab("Men")
 
+        btnMen.setBackgroundColor(Color.parseColor("#f603d0"))
+        btnWomen.setBackgroundColor(Color.parseColor("#FFFFFF"))
+
+
         // Apply initial rounded style
-         loadOrFetchProductList() // This is now called in loadOrFetchProductList()
+        loadOrFetchProductList() // This is now called in loadOrFetchProductList()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        // Always use 3 columns
+        (recyclerView.layoutManager as? GridLayoutManager)?.spanCount = 3
     }
 
     private fun loadOrFetchProductList() {
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val cached = prefs.getString(KEY_PRODUCT_LIST, null)
         if (cached != null) {
-            loader.visibility = View.GONE
             val list = JSONArray(cached)
             val apiProductNames = mutableListOf<String>()
             for (i in 0 until list.length()) {
@@ -106,10 +132,8 @@ class ProductSelectionActivity : AppCompatActivity() {
             filteredWomenCategories = womenCategories.filter { apiProductNames.contains(it.name) }
             setActiveTab(currentTab)
         } else {
-            loader.visibility = View.VISIBLE
             val token = getSharedPreferences("app_prefs", Context.MODE_PRIVATE).getString("token", null)
             if (token == null) {
-                loader.visibility = View.GONE
                 Toast.makeText(this, "No token found. Please login again.", Toast.LENGTH_LONG).show()
                 android.util.Log.e("ProductSelection", "No token found in app_prefs!")
                 return
@@ -122,13 +146,11 @@ class ProductSelectionActivity : AppCompatActivity() {
                 filteredMenCategories = menCategories.filter { apiProductNames.contains(it.name) }
                 filteredWomenCategories = womenCategories.filter { apiProductNames.contains(it.name) }
                 runOnUiThread {
-                    loader.visibility = View.GONE
                     setActiveTab(currentTab)
                 }
             }, { error ->
                 android.util.Log.e("ProductSelection", "API call failed: $error")
                 runOnUiThread {
-                    loader.visibility = View.GONE
                     Toast.makeText(this, "Failed to load products: $error", Toast.LENGTH_LONG).show()
                 }
             })
@@ -138,19 +160,7 @@ class ProductSelectionActivity : AppCompatActivity() {
     private var currentTab: String = "Men"
     private fun setActiveTab(category: String) {
         currentTab = category
-        val selectedColor = ContextCompat.getColor(this, R.color.purple_500)
-        val unselectedColor = ContextCompat.getColor(this, R.color.white)
-        val selectedTextColor = ContextCompat.getColor(this, R.color.white)
-        val unselectedTextColor = ContextCompat.getColor(this, R.color.grey_text)
-
-        applyRoundedButtonStyle(btnMen, unselectedColor, unselectedTextColor)
-        applyRoundedButtonStyle(btnWomen, unselectedColor, unselectedTextColor)
-
-        when (category) {
-            "Men" -> applyRoundedButtonStyle(btnMen, selectedColor, selectedTextColor)
-            "Women" -> applyRoundedButtonStyle(btnWomen, selectedColor, selectedTextColor)
-        }
-
+        // Removed setTextColor so selector works
         // Show only filtered categories for the selected tab
         when (category) {
             "Men" -> adapter.updateProducts(filteredMenCategories)
@@ -205,24 +215,38 @@ class ProductSelectionActivity : AppCompatActivity() {
 
 
     private fun openFabricForm(productName: String) {
-        val url = "http://localhost:8080/index.html#/fabric-form?fabric=" + productName.replace(" ", "%20")
+        val encodedName = productName.replace(" ", "%20")
+        val hasAddon = productName.equals("Suits", ignoreCase = true)
+
+        val url = if (hasAddon) {
+            "http://localhost:8080/index.html#/fabric-form?fabric=$encodedName&addOn=Pant"
+        } else {
+            "http://localhost:8080/index.html#/fabric-form?fabric=$encodedName"
+        }
+
+
+
+
+        Log.d("TAG", "openFabricForm: Loading URL = " + url.toString());
+
         val intent = Intent(this, OfflineWebview::class.java)
         intent.putExtra("fabric_url", url)
         startActivity(intent)
     }
+
 }
 class ProductAdapter(
     private var products: List<Product>,
     private val onProductClick: (Product) -> Unit
 ) : RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
     inner class ProductViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val imgProduct: ImageView = itemView.findViewById(R.id.imgProduct)
-        private val txtProductName: TextView = itemView.findViewById(R.id.txtProductName)
+        private val productIcon: ImageView = itemView.findViewById(R.id.productIcon)
+        private val productName: TextView = itemView.findViewById(R.id.productName)
 
         fun bind(product: Product) {
-            imgProduct.setImageResource(product.imageRes)
-            txtProductName.text = product.name
-            txtProductName.visibility = View.VISIBLE
+            productIcon.setImageResource(product.imageRes)
+            productName.text = product.name
+            productName.visibility = View.VISIBLE
             itemView.setOnClickListener { onProductClick(product) }
         }
     }

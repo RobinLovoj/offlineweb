@@ -77,4 +77,5 @@
     <color name="purple_700">@color/primary_700</color>
     <color name="teal_200">@color/pink_button</color>
     <color name="teal_700">@color/primary_700</color>
+    <color name="tab_purple">#7C3AED</color>
 </resources>

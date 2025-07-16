@@ -1,104 +1,134 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#fff">
+    android:background="@android:color/white"
+    tools:context=".ProductSelectionActivity">
 
-
+    <!-- Header -->
     <LinearLayout
-        android:layout_width="match_parent"
+        android:id="@+id/headerLayout"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_margin="20dp"
-        android:weightSum="1">
+        android:gravity="center"
+        android:paddingTop="24dp"
+        android:paddingBottom="12dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-        <Button
-            android:id="@+id/btnMen"
-            android:layout_width="0dp"
-            android:layout_weight="0.5"
-             android:text="men"
-            android:layout_height="wrap_content">
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_arrow_back"
+            android:contentDescription="Back"
+            android:tint="@android:color/black" />
 
-        </Button>
-
-        <Button
-            android:id="@+id/btnWomen"
-            android:layout_width="0dp"
-            android:layout_weight="0.5"
-             android:text="women"
-            android:layout_marginLeft="5dp"
-            android:layout_height="wrap_content">
-
-        </Button>
-
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="3D Order/Product"
+            android:textStyle="bold"
+            android:textSize="20sp"
+            android:textColor="#222"
+            android:layout_marginStart="12dp" />
     </LinearLayout>
 
-<!--     <com.google.android.material.button.MaterialButtonToggleGroup-->
-<!--        android:id="@+id/toggleGender"-->
-<!--        android:layout_width="match_parent"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_marginTop="34dp"-->
-<!--        android:layout_marginBottom="8dp"-->
-<!--        android:layout_marginHorizontal="24dp"-->
-<!--        app:singleSelection="true"-->
-<!--        app:checkedButton="@id/btnMen">-->
-<!--        -->
-<!--        -->
-<!--        -->
+    <!-- Gender Tabs (as separate buttons for perfect gap) -->
+    <LinearLayout
+        android:id="@+id/tabBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="106dp"
+        app:layout_constraintTop_toBottomOf="@id/headerLayout"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
-<!--        <com.google.android.material.button.MaterialButton-->
-<!--            android:id="@+id/btnMen"-->
-<!--            style="@style/Widget.MaterialComponents.Button.OutlinedButton"-->
-<!--            android:layout_width="0dp"-->
-<!--            android:layout_height="48dp"-->
-<!--            android:layout_weight="1"-->
-<!--            android:text="Men"-->
-<!--            android:textAllCaps="false"-->
-<!--            app:cornerRadius="24dp"-->
-<!--            app:strokeColor="@color/grey_background"-->
-<!--            app:strokeWidth="1dp"-->
-<!--            app:iconGravity="textStart"-->
-<!--            app:backgroundTint="@color/tab_button_bg"-->
-<!--            android:textColor="@color/tab_button_text"/>-->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnMen"
+            android:layout_width="120dp"
+            android:layout_height="64dp"
+            android:text="Men"
+            android:textAllCaps="false"
+            android:textColor="@color/tab_tab_text_selector"
+            app:icon="@drawable/ic_male"
+            app:iconTint="@color/tab_tab_text_selector"
+            app:iconGravity="textStart"
 
-<!--        <com.google.android.material.button.MaterialButton-->
-<!--            android:id="@+id/btnWomen"-->
-<!--            style="@style/Widget.MaterialComponents.Button.OutlinedButton"-->
-<!--            android:layout_width="0dp"-->
-<!--            android:layout_height="48dp"-->
-<!--            android:layout_weight="1"-->
-<!--            android:text="Women"-->
-<!--            android:textAllCaps="false"-->
-<!--            app:cornerRadius="24dp"-->
-<!--            app:strokeColor="@color/grey_text"-->
-<!--            app:strokeWidth="1dp"-->
-<!--            app:iconGravity="textStart"-->
-<!--            app:backgroundTint="@color/tab_button_bg"-->
-<!--            android:textColor="@color/tab_button_text"/>-->
-<!--    </com.google.android.material.button.MaterialButtonToggleGroup>-->
+            app:iconPadding="8dp"
+            app:background="@drawable/tab_button_bg"
+            app:cornerRadius="8dp"
+            android:checkable="true"
+           />
 
-    <!-- Loader -->
-    <ProgressBar
-        android:id="@+id/loader"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_gravity="center"
-        android:visibility="gone"
-        style="?android:attr/progressBarStyleLarge" />
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnWomen"
+            android:layout_width="120dp"
+            android:layout_height="64dp"
+            android:text="Women"
+            android:textAllCaps="false"
+            android:textColor="@color/tab_tab_text_selector"
+            app:icon="@drawable/ic_female"
+            app:iconTint="@color/tab_tab_text_selector"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:background="@drawable/tab_button_bg"
+            app:cornerRadius="8dp"
+            android:checkable="true"
+            android:layout_marginStart="5dp"/>
+    </LinearLayout>
 
     <!-- Product Grid -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerProducts"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_marginTop="2dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintTop_toBottomOf="@id/tabBar"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         android:clipToPadding="false"
-        android:overScrollMode="never"
-        android:paddingHorizontal="3dp"
-        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-        app:spanCount="4" />
+        android:overScrollMode="never" />
 
-</LinearLayout> 
+    <!-- Floating Cart Button -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabCart"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_margin="24dp"
+        android:src="@drawable/ic_cart"
+        app:backgroundTint="#f603d0"
+        app:tint="@android:color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Cart Badge -->
+    <TextView
+        android:id="@+id/cartBadge"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:background="@drawable/badge_circle"
+        android:text="0"
+        android:textColor="@android:color/white"
+        android:textSize="12sp"
+        android:gravity="center"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="@id/fabCart"
+        app:layout_constraintEnd_toEndOf="@id/fabCart"
+        android:translationX="12dp"
+        android:translationY="-12dp" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
