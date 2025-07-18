@@ -38,6 +38,14 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)
 
+        // Onboarding check
+        val onboardingPrefs = getSharedPreferences("offlineweb_prefs", MODE_PRIVATE)
+        val onboardingSeen = onboardingPrefs.getBoolean("onboarding_seen", false)
+        if (!onboardingSeen) {
+            startActivity(Intent(this, com.lovoj.androidoffline.Offlinewebview.OnboardingActivity::class.java))
+            finish()
+            return
+        }
 
         val prefs = getSharedPreferences("offlineweb_prefs", MODE_PRIVATE)
         isApiDone = prefs.getBoolean("api_done", false)
@@ -63,24 +71,7 @@ class SplashActivity : AppCompatActivity() {
             }
         }, "AndroidBackgroundProcessor")
         backgroundWebView.webViewClient = object : WebViewClient() {}
-
-//        // Start ZIP extraction and load cache-data URL after extraction
-//        val baseDir = File(filesDir, "offline_web")
-//        val contentManager = com.lovoj.androidoffline.Offlinewebview.ContentManager(baseDir)
-//        contentManager.extractAndLoadContent(
-//            onSuccess = {
-//                val url = "http://localhost:8080/index.html#/cache-data"
-//                backgroundWebView.loadUrl(url)
-//            },
-//            onError = {
-//                runOnUiThread {
-//
-//                    Toast.makeText(this, "Failed to prepare content", Toast.LENGTH_LONG).show()
-//                }
-//            }
-//        )
-
-        // Apply Lovoj app theme
+         // Apply Lovoj app theme
         LovojAppTheme.applyTheme(this, LovojAppTheme.THEME_LOVOJ_APP_SPLASH)
 
         splashLogo = findViewById(R.id.splashLogo)
@@ -91,17 +82,9 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun applyLovojColors() {
-        // Get Lovoj colors for white background theme
         val blackTextColor = LovojAppColors.getColor(this, R.color.black)
         val pinkColor = LovojAppColors.getColor(this, R.color.pink_button)
         val backgroundWhiteColor = LovojAppColors.getColor(this, R.color.background_white)
-        
-
-        
-        // Apply colors to loading indicator
-//        loadingIndicator.setBackgroundColor(backgroundWhiteColor)
-        
-        // Set status bar color to pink
         window.statusBarColor = pinkColor
     }
 
@@ -130,7 +113,7 @@ class SplashActivity : AppCompatActivity() {
 
         CoroutineScope(Dispatchers.Main).launch {
             delay(3000)
-            checkInternetSpeedAndNavigate()
+            checkInternetSpeedAndNavigate( )
         }
     }
 
@@ -190,7 +173,6 @@ class SplashActivity : AppCompatActivity() {
                 connection.connect()
                 connection.getInputStream().read(bytes)
             }
-            // Convert bytes/ms to Mbps
             val bits = bytes.size * 8
             val seconds = timeMillis / 1000.0
             (bits / 1_000_000.0) / seconds

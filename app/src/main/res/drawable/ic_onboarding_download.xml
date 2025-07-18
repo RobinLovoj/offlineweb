@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp"
+    android:height="100dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    <!-- Cloud shape -->
+    <path
+        android:fillColor="#B3E5FC"
+        android:strokeColor="#90CAF9"
+        android:strokeWidth="2"
+        android:pathData="M30,60 Q20,40 40,40 Q45,20 65,30 Q80,30 80,50 Q90,55 80,70 Q70,80 50,75 Q35,80 30,60 Z"/>
+    <!-- Download arrow -->
+    <path
+        android:strokeColor="#1976D2"
+        android:strokeWidth="5"
+        android:fillColor="#1976D2"
+        android:pathData="M50,55 L50,75 M45,70 L50,75 L55,70"/>
+</vector> 

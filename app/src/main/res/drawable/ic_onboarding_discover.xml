@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="100dp"
+    android:height="100dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+    <!-- Webpage rectangle as a path -->
+    <path
+        android:fillColor="#B3E5FC"
+        android:pathData="M15,30 h70 v40 h-70 z"/>
+    <!-- Magnifying glass circle -->
+    <path
+        android:strokeColor="#1976D2"
+        android:strokeWidth="4"
+        android:fillColor="#FFFFFF"
+        android:pathData="M60,60 m-15,0 a15,15 0 1,0 30,0 a15,15 0 1,0 -30,0"/>
+    <!-- Magnifying glass handle -->
+    <path
+        android:strokeColor="#1976D2"
+        android:strokeWidth="4"
+        android:fillColor="#1976D2"
+        android:pathData="M70,70 L85,85"/>
+</vector> 
