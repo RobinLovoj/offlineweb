@@ -109,14 +109,12 @@ class ProductSelectionActivity : AppCompatActivity() {
         btnWomen.setBackgroundColor(Color.parseColor("#FFFFFF"))
 
 
-        // Apply initial rounded style
         loadOrFetchProductList() // This is now called in loadOrFetchProductList()
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        // Always use 3 columns
-        (recyclerView.layoutManager as? GridLayoutManager)?.spanCount = 3
+         (recyclerView.layoutManager as? GridLayoutManager)?.spanCount = 3
     }
 
     private fun loadOrFetchProductList() {
@@ -160,8 +158,7 @@ class ProductSelectionActivity : AppCompatActivity() {
     private var currentTab: String = "Men"
     private fun setActiveTab(category: String) {
         currentTab = category
-        // Removed setTextColor so selector works
-        // Show only filtered categories for the selected tab
+
         when (category) {
             "Men" -> adapter.updateProducts(filteredMenCategories)
             "Women" -> adapter.updateProducts(filteredWomenCategories)

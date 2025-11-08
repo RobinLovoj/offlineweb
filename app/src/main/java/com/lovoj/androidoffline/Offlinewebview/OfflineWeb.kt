@@ -55,50 +55,86 @@ import android.animation.PropertyValuesHolder
 import android.animation.AnimatorSet
 import android.view.animation.CycleInterpolator
 import android.animation.Keyframe
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import android.view.LayoutInflater
+import android.widget.ProgressBar
+import android.view.ViewGroup
+import android.widget.BaseAdapter
+import android.widget.GridView
+import com.lovoj.androidoffline.ApiUtils
+import android.graphics.Color
+import android.widget.RelativeLayout
+import android.view.Gravity
 
 
 @RequiresApi(Build.VERSION_CODES.M)
 class OfflineWebview : AppCompatActivity() {
     lateinit var webView: WebView
-    private lateinit var progressBar: ImageView
-
-    private lateinit var download_text: TextView
-    private lateinit var loaderLayout: LinearLayout
-    private lateinit var backgroundProcessor: BackgroundProcessor
-    private lateinit var resourceMonitor: ResourceMonitor
-    private lateinit var contentManager: ContentManager
-    private lateinit var apiHelper: ApiHelper
-    private lateinit var webViewSetup: WebViewSetup
-    private lateinit var memoryManagerIntegration: MemoryManagerIntegration
-    private lateinit var connectivityManager: ConnectivityManager
-    private var networkCallback: ConnectivityManager.NetworkCallback? = null
-
+    private lateinit var downloadText: TextView
     private lateinit var indicatorText: TextView
     private lateinit var indicatorIcon: ImageView
     private lateinit var indicatorLayout: LinearLayout
+    private lateinit var overallProgressBar: ProgressBar
+
+    private lateinit var memoryManagerIntegration: MemoryManagerIntegration
+    private lateinit var backgroundProcessor: BackgroundProcessor
+    private lateinit var connectivityManager: ConnectivityManager
+    private var networkCallback: ConnectivityManager.NetworkCallback? = null
 
     private var indicatorJob: Job? = null
     private var indicatorAnimator: ObjectAnimator? = null
-
-
-    private var cache_Data = "http://localhost:8080/index.html#/cache-data?device=android&encoded="
-
     private var apiDone = false
     private val baseDir by lazy {
         File(filesDir, "offline_web").also { if (!it.exists()) it.mkdirs() }
     }
     private var localWebServer: LocalWebServer? = null
+    private val CACHE_DATA_PREFIX = "http://localhost:8080/cache_data?data="
 
-    @SuppressLint("SetTextI18n")
+    // Move ProductCard and ProductProgressAdapter to top-level
+
+    data class ProductCard(
+        val name: String,
+        val imageRes: Int,
+        var percent: Int = 0,
+        var isChecked: Boolean = false
+    )
+
+    class ProductProgressAdapter(
+        private val context: Context,
+        private val products: List<ProductCard>
+    ) : BaseAdapter() {
+        override fun getCount(): Int = products.size
+        override fun getItem(position: Int): Any = products[position]
+        override fun getItemId(position: Int): Long = position.toLong()
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+            val view = convertView ?: LayoutInflater.from(context).inflate(R.layout.item_media_card, parent, false)
+            val imageThumbnail = view.findViewById<ImageView>(R.id.imageThumbnail)
+            val productName = view.findViewById<TextView>(R.id.productName)
+            val percentText = view.findViewById<TextView>(R.id.percentText)
+            val progressBar = view.findViewById<ProgressBar>(R.id.itemProgressBar)
+            val checkMark = view.findViewById<ImageView>(R.id.checkMark)
+            val item = products[position]
+            imageThumbnail.setImageResource(item.imageRes)
+            productName.text = item.name
+            percentText.text = "${item.percent}%"
+            progressBar.progress = item.percent
+            checkMark.visibility = if (item.isChecked) View.VISIBLE else View.GONE
+            return view
+        }
+    }
+
+    @SuppressLint("SetTextI18n", "MissingInflatedId")
     @RequiresApi(Build.VERSION_CODES.N)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_offline_web)
 
+        // Initialize overallProgressBar after setContentView
+        overallProgressBar = findViewById(R.id.overallProgressBar)
+        // Ensure download_text is initialized right after setContentView
+        downloadText = findViewById(R.id.download_text_per)
         webView = findViewById(R.id.webview)
-        download_text = findViewById(R.id.download_text_per)
-        progressBar = findViewById(R.id.loading_indicator)
-        loaderLayout = findViewById(R.id.loaderLayout)
         indicatorText = findViewById(R.id.indicatorText)
         indicatorIcon = findViewById(R.id.indicatorIcon)
         indicatorLayout = findViewById(R.id.connectionIndicator)
@@ -108,19 +144,18 @@ class OfflineWebview : AppCompatActivity() {
         updateConnectionIndicator(isInternetAvailable())
 
         memoryManagerIntegration = MemoryManagerIntegration(this, baseDir)
-
         setupMemoryPressureCallbacks()
 
-        apiHelper = ApiHelper()
+        val apiHelper = ApiHelper()
         backgroundProcessor = BackgroundProcessor(
             context = this,
             baseDir = baseDir,
             mainWebView = webView,
             handleApiRequest = { url, method -> apiHelper.handleApiRequest(url, method) }
         )
-        resourceMonitor = ResourceMonitor()
-        contentManager = ContentManager(baseDir)
-        webViewSetup = WebViewSetup(this)
+        val resourceMonitor = ResourceMonitor()
+        val contentManager = ContentManager(baseDir)
+        val webViewSetup = WebViewSetup(this)
 
         val distDir = File(baseDir, "dist")
         Log.d("TAG", "onCreate: Data $distDir")
@@ -128,7 +163,7 @@ class OfflineWebview : AppCompatActivity() {
         localWebServer?.start()
 
         webView.addJavascriptInterface(
-            WebAppInterface(this, download_text),
+            WebAppInterface(this, downloadText),
             "AndroidBackgroundProcessor"
         )
 
@@ -161,8 +196,8 @@ class OfflineWebview : AppCompatActivity() {
                 super.onPageFinished(view, url)
                 Log.d("OfflineWebview", "WebView onPageFinished: $url")
 
-                if (url.toString().contains(cache_Data)) {
-                    download_text.text = "Configuring content..."
+                if (url.toString().contains(CACHE_DATA_PREFIX)) {
+                    //download_text.text = "Configuring content..."
                 }
 
                 // Inject comprehensive error handling for texture loading
@@ -469,8 +504,8 @@ class OfflineWebview : AppCompatActivity() {
                     "OfflineWebview",
                     "WebView onReceivedError: ${request?.url}, error: ${error?.description}"
                 )
-                progressBar.visibility = View.GONE
-                loaderLayout.visibility = View.GONE
+                // progressBar.visibility = View.GONE
+                // loaderLayout.visibility = View.GONE
 
                 val errorMessage = "WebView Error: ${error?.description}"
                 memoryManagerIntegration.handleBackgroundCacheError(
@@ -507,36 +542,36 @@ class OfflineWebview : AppCompatActivity() {
         // Set up periodic protection injection
         setupPeriodicProtection()
 
-        Glide.with(this).asGif().load(R.drawable.overlay).into(progressBar)
+        // Glide.with(this).asGif().load(R.drawable.overlay).into(progressBar)
         if (!apiDone) {
-            progressBar.visibility = View.VISIBLE
-            contentManager.extractAndLoadContent(
-                onSuccess = {
-                    loadContent()
-                },
-                onError = { errorMsg ->
-                    progressBar.visibility = View.GONE
-                    loaderLayout.visibility = View.GONE
-                    val distIndex = File(baseDir, "dist/index.html")
-                    if (!distIndex.exists()) {
-                        Toast.makeText(
-                            this,
-                            "No Internet and no local content found. Please connect to the internet once.",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    } else {
-                        loadContent()
-                    }
-                    memoryManagerIntegration.handleBackgroundCacheError("Content loading error: $errorMsg")
-                },
-                onProgress = { progress ->
-                    download_text.text = "Downloading content: $progress%"
-                    if (progress.toString() == "100") {
-                        download_text.text = "Extracting content..."
-                    }
-                }
+            // progressBar.visibility = View.VISIBLE
+            // contentManager.extractAndLoadContent(
+            //     onSuccess = {
+            //         loadContent()
+            //     },
+            //     onError = { errorMsg ->
+            //         // progressBar.visibility = View.GONE
+            //         // loaderLayout.visibility = View.GONE
+            //         val distIndex = File(baseDir, "dist/index.html")
+            //         if (!distIndex.exists()) {
+            //             Toast.makeText(
+            //                 this,
+            //                 "No Internet and no local content found. Please connect to the internet once.",
+            //                 Toast.LENGTH_LONG
+            //             ).show()
+            //         } else {
+            //             loadContent()
+            //         }
+            //         memoryManagerIntegration.handleBackgroundCacheError("Content loading error: $errorMsg")
+            //     },
+            //     onProgress = { progress ->
+            //        // download_text.text = "Downloading content: $progress%"
+            //         if (progress.toString() == "100") {
+            //            // download_text.text = "Extracting content..."
+            //         }
+            //     }
 
-            )
+            // )
         } else {
             loadContent()
         }
@@ -544,10 +579,94 @@ class OfflineWebview : AppCompatActivity() {
 
 
         Handler(mainLooper).postDelayed({
-            if (progressBar.isVisible) {
-                Log.e("OfflineWebview", "Loader timeout: forcibly hiding loader after 10 seconds.")
-            }
+            // if (progressBar.isVisible) {
+            Log.e("OfflineWebview", "Loader timeout: forcibly hiding loader after 10 seconds.")
+            // }
         }, 10000)
+
+        // Use RecyclerView for productProgressRecycler
+        val productRecycler = findViewById<GridView>(R.id.productProgressRecycler)
+        productRecycler.numColumns = 3
+        val productList = mutableListOf<ProductCard>()
+        val adapter = ProductProgressAdapter(this, productList)
+        productRecycler.adapter = adapter
+
+        // Fetch product list from API
+        val token = getSharedPreferences("app_prefs", Context.MODE_PRIVATE).getString("token", null)
+        if (token == null) {
+            Toast.makeText(this, "No token found. Please login again.", Toast.LENGTH_LONG).show()
+        } else {
+            ApiUtils.fetchMakingProductList(this, token, { apiProductNames ->
+                runOnUiThread {
+                    productList.clear()
+                    for (name in apiProductNames) {
+                        val imageRes = getProductImageRes(name)
+                        productList.add(ProductCard(name, imageRes))
+                    }
+                    adapter.notifyDataSetChanged()
+                }
+            }, { error ->
+                runOnUiThread {
+                    Toast.makeText(this, "Failed to load products: $error", Toast.LENGTH_LONG).show()
+                }
+            })
+        }
+
+        // Start ContentManager and update progress dynamically
+        contentManager.extractAndLoadContent(
+            onSuccess = {
+                loadContent()
+            },
+            onError = { errorMsg ->
+                // progressBar.visibility = View.GONE
+                // loaderLayout.visibility = View.GONE
+                val distIndex = File(baseDir, "dist/index.html")
+                if (!distIndex.exists()) {
+                    Toast.makeText(
+                        this,
+                        "No Internet and no local content found. Please connect to the internet once.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    loadContent()
+                }
+                memoryManagerIntegration.handleBackgroundCacheError("Content loading error: $errorMsg")
+            },
+            onProgress = { progress ->
+                runOnUiThread {
+                    // Update main download card progress bar and percent
+                    overallProgressBar.progress = progress
+                     downloadText.text = "$progress%"
+                    // Update product cards as before
+                    for (product in productList) {
+                        product.percent = progress
+                        product.isChecked = progress >= 100
+                    }
+                    adapter.notifyDataSetChanged()
+                }
+            }
+        )
+
+
+//        val token = getSharedPreferences("app_prefs", Context.MODE_PRIVATE).getString("token", null)
+//        if (token == null) {
+//            Toast.makeText(this, "No token found. Please login again.", Toast.LENGTH_LONG).show()
+//        } else {
+//            ApiUtils.fetchMakingProductList(this, token, { productList: List<String> ->
+//                for (name in productList) {
+//                    val imageRes = getProductImageRes(name)
+//                    products.add(ProductDownloadStatus(name, imageRes))
+//                }
+//                this@OfflineWebview.runOnUiThread {
+//                    adapter.notifyDataSetChanged()
+//                    simulateProductDownloadProgress(products, adapter, overallProgressBar, download_text)
+//                }
+//            }, { error: String ->
+//                this@OfflineWebview.runOnUiThread {
+//                    Toast.makeText(this, "Failed to load products: $error", Toast.LENGTH_LONG).show()
+//                }
+//            })
+//        }
     }
 
 
@@ -567,7 +686,7 @@ class OfflineWebview : AppCompatActivity() {
 
 
     private fun handleMemoryPressure() {
-        runOnUiThread {
+        this@OfflineWebview.runOnUiThread {
             Toast.makeText(
                 this,
                 "Optimizing memory for better performance...",
@@ -580,7 +699,7 @@ class OfflineWebview : AppCompatActivity() {
 
 
     private fun handleMemoryError(errorType: String, errorMessage: String) {
-        runOnUiThread {
+        this@OfflineWebview.runOnUiThread {
             when (errorType) {
                 "BACKGROUND_CACHE_ERROR" -> {
                     Log.w("OfflineWebview", "Background cache error: $errorMessage")
@@ -624,8 +743,8 @@ class OfflineWebview : AppCompatActivity() {
         val intent = intent
         val fabricUrl = intent.getStringExtra("fabric_url")
         if (apiDone && fabricUrl == null) {
-            loaderLayout.visibility = View.GONE
-            progressBar.visibility = View.GONE
+            // loaderLayout.visibility = View.GONE
+            // progressBar.visibility = View.GONE
             val selectionIntent = Intent(this, ProductSelectionActivity::class.java)
             selectionIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
             startActivity(selectionIntent)
@@ -637,10 +756,10 @@ class OfflineWebview : AppCompatActivity() {
 
         if (apiDone && fabricUrl != null) {
             url = urlFabric
-            download_text.text = ""
-            loaderLayout.visibility = View.GONE
+          //  download_text.text = ""
+            // loaderLayout.visibility = View.GONE
         } else {
-            url = cache_Data + urlencodedtokn
+            url = CACHE_DATA_PREFIX + urlencodedtokn
         }
 
         Log.d("OfflineWebview", "Starting WebView with url: $url")
@@ -1362,7 +1481,7 @@ class OfflineWebview : AppCompatActivity() {
             val request = NetworkRequest.Builder()
                 .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 .build()
-            networkCallback = object : ConnectivityManager.NetworkCallback() {
+            val networkCallback = object : ConnectivityManager.NetworkCallback() {
                 override fun onAvailable(network: Network) {
                     CoroutineScope(Dispatchers.IO).launch {
                         val hasInternet = isInternetAvailable()
@@ -1372,10 +1491,10 @@ class OfflineWebview : AppCompatActivity() {
                     }
                 }
                 override fun onLost(network: Network) {
-                    runOnUiThread { updateConnectionIndicator(false) }
+                    this@OfflineWebview.runOnUiThread { updateConnectionIndicator(false) }
                 }
             }
-            connectivityManager.registerNetworkCallback(request, networkCallback!!)
+            connectivityManager.registerNetworkCallback(request, networkCallback)
         }
     }
 
@@ -1470,7 +1589,65 @@ class OfflineWebview : AppCompatActivity() {
             false
         }
     }
+
+    private fun simulateProductDownloadProgress(products: MutableList<ProductDownloadStatus>, adapter: ProductProgressAdapter, overallProgressBar: ProgressBar, downloadText: TextView) {
+        CoroutineScope(Dispatchers.Main).launch {
+            var total = 0
+            while (total < products.size * 100) {
+                for (product in products) {
+                    if (product.percent < 100) {
+                        product.percent += (5..15).random()
+                        if (product.percent >= 100) {
+                            product.percent = 100
+                            product.isComplete = true
+                        }
+                    }
+                }
+                adapter.notifyDataSetChanged()
+                total = products.sumOf { it.percent }
+                val percent = if (products.isNotEmpty()) total / products.size else 0
+                overallProgressBar.progress = percent
+                downloadText.text = "$percent%"
+                delay(400)
+            }
+        }
+    }
 }
+
+
+
+data class ProductDownloadStatus(
+    val name: String,
+    val imageRes: Int,
+    var percent: Int = 0,
+    var isComplete: Boolean = false
+)
+
+
+class MediaCardGridAdapter(
+    private val context: Context,
+    private val items: List<MediaCardItem>
+) : BaseAdapter() {
+
+    override fun getCount(): Int = items.size
+    override fun getItem(position: Int): Any = items[position]
+    override fun getItemId(position: Int): Long = position.toLong()
+
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+        val view = convertView ?: LayoutInflater.from(context).inflate(R.layout.item_media_card, parent, false)
+
+        val imageThumbnail = view.findViewById<ImageView>(R.id.imageThumbnail)
+        val checkMark = view.findViewById<ImageView>(R.id.checkMark)
+
+        val item = items[position]
+
+        imageThumbnail.setImageResource(item.imageRes)
+        checkMark.visibility = if (item.isChecked) View.VISIBLE else View.GONE
+
+        return view
+    }
+}
+
 
 class WebAppInterface(
     private val activity: OfflineWebview,
@@ -1695,3 +1872,28 @@ class SaveCustomizedProductInterface {
         }
     }
 }
+private fun getProductImageRes(productName: String): Int {
+    return when (productName.trim().lowercase()) {
+        "shirt" -> R.drawable.men_shirt
+        "pant" -> R.drawable.cropped_pants
+        "blazer" -> R.drawable.blazer
+        "bandhgala suit" -> R.drawable.bandhgala_suit
+        "suits" -> R.drawable.suit
+        "half jacket" -> R.drawable.half_jacket
+        "trench coat" -> R.drawable.overcoat
+        "abayas" -> R.drawable.men_abayas
+        "kurti" -> R.drawable.kurta
+        "bottom wear" -> R.drawable.cropped_pants
+        "dupatta" -> R.drawable.spl
+        "women shirt" -> R.drawable.men_shirt
+        "women pant" -> R.drawable.cropped_pants
+        "women blazer" -> R.drawable.blazer
+        "women suit" -> R.drawable.suit
+        "one piece dress" -> R.drawable.one_piece
+        "women trench coat" -> R.drawable.overcoat
+        "women abayas" -> R.drawable.women_abayas
+        "skirt" -> R.drawable.women_skirt
+        else -> R.drawable.suit
+    }
+}
+

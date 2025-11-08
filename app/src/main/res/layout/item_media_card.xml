@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_width="140dp"
+    android:layout_height="180dp"
+    android:layout_margin="8dp"
+    card_view:cardCornerRadius="14dp"
+    card_view:cardElevation="6dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <!-- Product Image -->
+        <ImageView
+            android:id="@+id/imageThumbnail"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:scaleType="centerCrop"
+            android:contentDescription="Product Image"
+            android:background="@android:color/white" />
+
+        <!-- Product Name (top overlay) -->
+        <TextView
+            android:id="@+id/productName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@id/imageThumbnail"
+            android:background="#80000000"
+            android:textColor="@android:color/white"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:padding="6dp"
+            android:maxLines="1"
+            android:ellipsize="end"/>
+
+        <!-- Check mark (top-right corner) -->
+        <ImageView
+            android:id="@+id/checkMark"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_alignTop="@id/imageThumbnail"
+            android:layout_alignEnd="@id/imageThumbnail"
+            android:layout_margin="6dp"
+            android:src="@drawable/ic_check"
+            android:visibility="gone" />
+
+        <!-- ProgressBar (horizontal, below image) -->
+        <ProgressBar
+            android:id="@+id/itemProgressBar"
+            style="@android:style/Widget.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="16dp"
+            android:layout_below="@id/imageThumbnail"
+            android:layout_marginTop="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:max="100"
+            android:progress="0"
+            android:progressDrawable="@drawable/progress_download_bar"/>
+
+        <!-- Percentage Text (overlay on progress bar) -->
+        <TextView
+            android:id="@+id/percentText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/imageThumbnail"
+            android:layout_centerHorizontal="true"
+            android:layout_alignTop="@id/itemProgressBar"
+            android:layout_alignBottom="@id/itemProgressBar"
+            android:text="0%"
+            android:textColor="@android:color/black"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:background="#33FFFFFF"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp"/>
+
+    </RelativeLayout>
+
+</androidx.cardview.widget.CardView>

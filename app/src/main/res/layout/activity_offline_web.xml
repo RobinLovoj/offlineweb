@@ -1,87 +1,143 @@
-<!-- res/layout/activity_main.xml -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-     <WebView
+    <!-- WebView -->
+    <WebView
         android:id="@+id/webview"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-
-     <LinearLayout
-         android:id="@+id/loaderLayout"
-         android:layout_width="match_parent"
-         android:layout_height="match_parent"
-         android:layout_gravity="center"
-         android:gravity="center"
-         android:orientation="vertical"
-         android:background="#fff">
-
-          <ImageView
-              android:id="@+id/loading_indicator"
-              android:layout_width="200dp"
-              android:layout_height="100dp"
-              android:visibility="visible"
-              android:layout_gravity="center"
-              android:layout_marginRight="10dp"
-              android:src="@drawable/loader"
-              android:scaleType="fitCenter" />
-
-
-          <TextView
-              android:id="@+id/download_text_per"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:text="Download in progress"
-              android:layout_gravity="center"
-              android:textStyle="bold"
-              android:textSize="24sp"
-              android:gravity="center"
-              android:textColor="#000">
-
-          </TextView>
-
-     </LinearLayout>
-
-<FrameLayout
-    android:id="@+id/connectionIndicatorContainer"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-     android:layout_marginStart="50dp"
-     >
-
+    <!-- Loader Layout with GridView -->
     <LinearLayout
-        android:id="@+id/connectionIndicator"
-        android:layout_width="wrap_content"
-        android:layout_height="30dp"
-        android:orientation="horizontal"
-        android:gravity="center"
-        android:paddingStart="28dp"
-        android:paddingEnd="18dp"
-        android:background="@drawable/indicator_online_bg"
-        android:elevation="0dp"
-        android:animateLayoutChanges="true">
+        android:id="@+id/loaderLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:background="#FFFFFF">
 
-        <TextView
-            android:id="@+id/indicatorText"
-            android:layout_width="wrap_content"
+        <!-- RecyclerView replacing GridView -->
+        <GridView
+            android:id="@+id/productProgressRecycler"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="LOADED ONLINE 😃"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:textColor="#00FF00"
-            android:fontFamily="monospace"
-            android:letterSpacing="0.1"
-            android:layout_marginEnd="8dp"
-            android:singleLine="true"
-            android:maxLines="1"
-            android:ellipsize="end"/>
+            android:layout_margin="10dp"
+            android:visibility="visible"
+            android:orientation="horizontal"
+            android:overScrollMode="never"
+            android:clipToPadding="false"
+            android:paddingBottom="8dp" />
 
-        <ImageView
-            android:id="@+id/indicatorIcon"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:tint="#00FF00"/>
+        <!-- Download Progress Card -->
+        <LinearLayout
+            android:id="@+id/downloadStatusCard"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:visibility="gone"
+            android:background="@drawable/bg_download_card"
+            android:elevation="6dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:id="@+id/textDownloading"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="DOWNLOADING..."
+                    android:textColor="@android:color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/download_text_per"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0%"
+                    android:textColor="@android:color/white"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Spacing -->
+            <Space
+                android:layout_width="match_parent"
+                android:layout_height="12dp" />
+
+            <!-- ProgressBar -->
+            <ProgressBar
+                android:id="@+id/overallProgressBar"
+                style="@android:style/Widget.ProgressBar.Horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="20dp"
+                android:progress="27"
+                android:max="100"
+                android:progressDrawable="@drawable/progress_download_bar" />
+        </LinearLayout>
     </LinearLayout>
+
+    <!-- Extraction progress message -->
+    <TextView
+        android:id="@+id/extractionTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="32dp"
+        android:text="Extraction in progress, please wait... 0%"
+        android:textColor="#222222"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:background="#FFF9C4"
+        android:padding="16dp"
+        android:visibility="gone" />
+
+    <!-- Online/Offline Status Indicator -->
+    <FrameLayout
+        android:id="@+id/connectionIndicatorContainer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="50dp">
+
+        <LinearLayout
+            android:id="@+id/connectionIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            android:gravity="center"
+            android:paddingStart="28dp"
+            android:paddingEnd="18dp"
+            android:background="@drawable/indicator_online_bg"
+            android:elevation="0dp"
+            android:animateLayoutChanges="true">
+
+            <TextView
+                android:id="@+id/indicatorText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="LOADED ONLINE 😃"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="#00FF00"
+                android:fontFamily="monospace"
+                android:letterSpacing="0.1"
+                android:layout_marginEnd="8dp"
+                android:singleLine="true"
+                android:maxLines="1"
+                android:ellipsize="end" />
+
+            <ImageView
+                android:id="@+id/indicatorIcon"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:tint="#00FF00" />
+        </LinearLayout>
+    </FrameLayout>
 </FrameLayout>
- </FrameLayout>
